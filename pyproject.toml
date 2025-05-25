@@ -1,0 +1,21 @@
+[project]
+name = "oop-final"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "STRONGAIR030",email = "b89586639@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pygame (>=2.6.1,<3.0.0)",
+    "ruff (>=0.11.11,<0.12.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
