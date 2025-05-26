@@ -1,5 +1,7 @@
 from calendar import c
 import re
+from tokenize import group
+from typing import List
 import pygame
 import math
 import random
@@ -17,30 +19,111 @@ dragging = False
 last_mouse_pos = (0, 0)
 
 # 路徑節點（格子座標）
-path = [
-    (1, 2),
-    (2, 2),
-    (3, 2),
-    (3, 3),
-    (3, 4),
-    (4, 4),
-    (5, 4),
-    (5, 5),
-    (5, 6),
-    (4, 6),
-    (3, 6),
-    (3, 7),
-    (4, 7),
-    (5, 7),
+HOME_PATH = (5, 4)
+ENEMY_SUMMON_PATH_1 = (1, 1)
+ENEMY_SUMMON_PATH_2 = (8, 8)
+PATH_1 = [
+    ENEMY_SUMMON_PATH_1,
+    (2, 1),
+    (3, 1),
+    (4, 1),
+    (5, 1),
+    (5, 2),
+    (6, 2),
+    (7, 2),
+    (8, 2),
+    (8, 3),
+    (8, 4),
+    (8, 5),
+    (7, 5),
+    (6, 5),
+    (6, 4),
+    HOME_PATH,
+]
+
+PATH_2 = [
+    ENEMY_SUMMON_PATH_2,
+    (8, 7),
+    (7, 7),
     (6, 7),
     (6, 8),
-    (6, 9),
-    (1, 2),
+    (5, 8),
+    (4, 8),
+    (3, 8),
+    (3, 7),
+    (3, 6),
+    (2, 6),
+    (1, 6),
+    (1, 5),
+    (1, 4),
+    (2, 4),
+    (3, 4),
+    (4, 4),
+    HOME_PATH,
 ]
 
 
-class Bullet:
+def check_hit(pos, radius, enemise):
+    for enemy in enemise:
+        dx = enemy.pos[0] - pos[0]
+        dy = enemy.pos[1] - pos[1]
+        dist = math.hypot(dx, dy)
+        if dist <= radius:
+            return True
+    return False
+
+
+class BoxItem:
+    def __init__(self, pos, size, radius, box: "ItemBox" = None):
+        self.box: "ItemBox" = box
+        self.pos = pos
+        self.size = size
+        self.radius = radius
+        self.rect = pygame.Rect(pos[0], pos[1], size[0], size[1])
+
+    def draw(self, surface, zoom, offset):
+        pass
+
+    def update(self, dt):
+        pass
+
+    def kill(self):
+        if self.box is not None:
+            self.box.remove(self)
+        else:
+            print("No group to remove from")
+        print("Item killed")
+        # 在這裡可以添加更多邏輯，例如增加分數或播放音效
+
+
+class ItemBox:
+    def __init__(self):
+        self.box: List["BoxItem"] = []
+
+    def add(self, item: "BoxItem"):
+        self.box.append(item)
+        item.box = self
+
+    def remove(self, item: "BoxItem"):
+        if item not in self.box:
+            print("Item not found in box")
+            return
+        self.box.remove(item)
+
+    def update(self, dt):
+        for item in self.box:
+            item.update(dt)
+
+    def __len__(self):
+        return len(self.box)
+
+    def __iter__(self):
+        return iter(self.box)
+
+
+class Bullet(BoxItem):
     def __init__(self, pos, target):
+        super().__init__(pos, (10, 10), 5)
         self.pos = pos
         self.target = target
         self.speed = 300  # 每秒移動 300 pixels
@@ -56,6 +139,15 @@ class Bullet:
             self.pos[0] += dx / dist * self.speed * dt
             self.pos[1] += dy / dist * self.speed * dt
 
+        if check_hit(self.pos, 5, [self.target]):
+            self.target.health -= 1
+            print(
+                f"Enemy health: {self.target.health} tset_health: {self.target.test_health}"
+            )
+            self.kill()
+        if self.target.health <= 0:
+            self.target.kill()
+
     def draw(self, surface, zoom, offset):
         screen_x = int(self.pos[0] * zoom + offset[0])
         screen_y = int(self.pos[1] * zoom + offset[1])
@@ -63,8 +155,10 @@ class Bullet:
 
 
 # 敵人類別
-class Enemy:
+class Enemy(BoxItem):
     def __init__(self, path):
+        self.health = 100
+        self.test_health = 100
         self.path = path
         self.current_index = 0
         self.speed = 200  # 每秒 100 px
@@ -77,6 +171,8 @@ class Enemy:
             path[0][0] * GRID_SIZE + GRID_SIZE / 2 + self.offset[0],
             path[0][1] * GRID_SIZE + GRID_SIZE / 2 + self.offset[1],
         ]
+        self.size = (GRID_SIZE, GRID_SIZE)
+        self.radius = int(GRID_SIZE * self.radius_ratio)
 
     def update(self, dt):
         if self.current_index >= len(self.path) - 1:
@@ -112,7 +208,7 @@ class Tower:
             grid_pos[0] * GRID_SIZE + GRID_SIZE / 2,
             grid_pos[1] * GRID_SIZE + GRID_SIZE / 2,
         ]
-        self.radius = GRID_SIZE * 1.5  # 塔的攻擊範圍
+        self.radius = GRID_SIZE * 3  # 塔的攻擊範圍
         self.shoot_cooldown = 0.0  # 每秒可以射擊一次
         self.shoot_rate = 10
 
@@ -137,24 +233,25 @@ class Tower:
             surface, (0, 255, 0), (screen_x, screen_y), int(self.radius * zoom), 1
         )
 
-    def shoot(self, enemies, bullets) -> bool:
+    def shoot(self, enemies: "ItemBox", bullets: "ItemBox") -> bool:
         for enemy in enemies:
             dx = enemy.pos[0] - self.pos[0]
             dy = enemy.pos[1] - self.pos[1]
             dist = math.hypot(dx, dy)
-            if dist <= self.radius:
+            if dist <= self.radius and enemy.test_health > 0:
                 target = enemy
+                enemy.test_health -= 1
                 new_bullet = Bullet([self.pos[0], self.pos[1]], target)
-                bullets.append(new_bullet)
+                bullets.add(new_bullet)
                 return True  # 成功射擊
 
         return False  # 沒有敵人可以射擊
 
 
 # 建立多個敵人
-enemies = []
+enemies = ItemBox()
 towers = [Tower((2, 3)), Tower((4, 5))]
-bullets = []
+bullets = ItemBox()
 enemy_cooldown = 0.0
 enemy_spawn_rate = 1.0  # 每秒生成一個敵人
 
@@ -162,7 +259,6 @@ running = True
 while running:
     dt = clock.tick(60) / 1000
     enemy_cooldown += dt
-    print(camera_offset)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -190,9 +286,9 @@ while running:
             camera_offset[0] = -(world_x * ZOOM - mouse_x)
             camera_offset[1] = -(world_y * ZOOM - mouse_y)
 
-    if len(enemies) < 1 and enemy_cooldown >= enemy_spawn_rate:  # 限制最多10個敵人
-        new_enemy = Enemy(path)
-        enemies.append(new_enemy)
+    if len(enemies) < 5 and enemy_cooldown >= enemy_spawn_rate:  # 限制最多10個敵人
+        new_enemy = Enemy(random.choice([PATH_1, PATH_2]))
+        enemies.add(new_enemy)
         enemy_cooldown = 0.0
 
     for enemy in enemies:
