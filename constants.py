@@ -1,3 +1,5 @@
+import os
+
 GAME_FPS = 60
 HOME_PATH = (5, 4)
 ENEMY_SUMMON_PATH_1 = (1, 1)
@@ -44,3 +46,9 @@ PATH_2 = [
 ENEMY_COLORS = [(255, 100, 100), (100, 255, 100), (100, 100, 255)]
 GRID_SIZE = 128
 GRID_GAP = 5
+MAP_SIZE = 10
+MAP_REAL_SIZE = [
+    (GRID_SIZE + GRID_GAP) * MAP_SIZE,
+    (GRID_SIZE + GRID_GAP) * MAP_SIZE,
+]
+IMAGE_PATH = os.path.join(os.path.dirname(__file__), "assets", "images")

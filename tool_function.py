@@ -1,6 +1,8 @@
 import math
+import pygame
+import os
 from typing import Dict, TYPE_CHECKING
-from constants import GRID_GAP, GRID_SIZE
+from constants import GRID_GAP, GRID_SIZE, IMAGE_PATH
 from game_stat import GameState
 
 if TYPE_CHECKING:
@@ -77,3 +79,8 @@ def find_max_health_enemy(enemies) -> "Item | None":
             max_health = enemy.health
             target_enemy = enemy
     return target_enemy if target_enemy else None
+
+
+def load_image(name: str):
+    image = pygame.image.load(os.path.join(IMAGE_PATH, name)).convert_alpha()
+    return image

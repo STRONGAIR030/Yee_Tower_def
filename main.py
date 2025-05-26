@@ -1,5 +1,6 @@
 import pygame
 import random
+from components.bullet import StarBullet
 from constants import (
     PATH_1,
     PATH_2,
@@ -11,7 +12,7 @@ from components.enemy import Enemy
 from game_stat import GameState
 from components.tower import Tower, TriangleTower
 from components.Item_group import ItemGroup
-from tool_function import check_hit_radius_group
+from tool_function import check_hit_radius_group, load_image
 from components.tile import Tile
 
 
@@ -20,6 +21,8 @@ pygame.init()
 screen = pygame.display.set_mode((1200, 1200))
 pygame.display.set_caption("Yee Tower Defense")
 clock = pygame.time.Clock()
+
+StarBullet.star_bullet_image = load_image("star_bullet.png")  # 載入星形子彈圖片
 
 enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組
@@ -56,6 +59,7 @@ while GameState.running:
             GameState.camera_offset[1] = wordy * GameState.zoom - my
 
     screen.fill((200, 200, 200))
+    overlay = pygame.Surface((1200, 1200), pygame.SRCALPHA)
 
     if enemy_summon_cooldown > 1 and len(enemy_group) < 4:
         # 每 1 秒生成一個敵人，最多 10 個
@@ -71,12 +75,14 @@ while GameState.running:
 
     hits = check_hit_radius_group(enemy_group, bullets.group)
     for enemy, bullet in hits.items():
-        if bullet.target is not enemy:
+        if bullet.has_target and bullet.target is not enemy:
             continue
-        enemy.display_health -= 1
+        elif bullet.is_effect:
+            continue
+        enemy.display_health -= bullet.atk
         if enemy.display_health <= 0:
             enemy.kill()  # 假設有 kill 方法來處理死亡
-        bullets.remove(bullet)  # 移除子彈
+        bullet.kill()  # 移除子彈
 
     # 繪製格子
     for x in range(10):
@@ -90,17 +96,18 @@ while GameState.running:
             else:
                 tile_type = "normal"
             tile = Tile(x, y, type=tile_type)
-            tile.draw(screen, GameState.zoom)
+            tile.draw(overlay, GameState.zoom)
 
     for enemy in enemy_group:
-        enemy.draw(screen, GameState.zoom)
+        enemy.draw(overlay, GameState.zoom)
 
     for bullet in bullets:
-        bullet.draw(screen, GameState.zoom)
+        bullet.draw(overlay, GameState.zoom)
 
     for tower in towers:
-        tower.draw(screen, GameState.zoom)
+        tower.draw(overlay, GameState.zoom)
 
+    screen.blit(overlay, (0, 0))
     pygame.display.flip()  # 顯示整個畫面內容
 
 pygame.quit()  # 結束遊戲
