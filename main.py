@@ -10,7 +10,7 @@ from constants import (
 )
 from components.enemy import Enemy
 from game_stat import GameState
-from components.tower import Tower, TriangleTower
+from components.tower import PentagonTower, SquareTower, StarTower, Tower, TriangleTower
 from components.Item_group import ItemGroup
 from tool_function import check_hit_radius_group, load_image
 from components.tile import Tile
@@ -26,13 +26,19 @@ StarBullet.star_bullet_image = load_image("star_bullet.png")  # 載入星形子�
 
 enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組
-towers = [Tower((2, 3)), Tower((4, 5)), TriangleTower((5, 7))]  # 塔的列表
-enemy_summon_cooldown = 0.0  # 敵人生成冷卻時間
+towers = [
+    Tower((2, 3)),
+    Tower((4, 5)),
+    TriangleTower((5, 7)),
+    SquareTower((4, 7)),
+    StarTower((5, 5)),
+    PentagonTower((6, 6)),
+]  # 塔的列表
 
 
 while GameState.running:
     dt = clock.tick(60) / 1000
-    enemy_summon_cooldown += dt  # 更新敵人生成冷卻時間
+    GameState.enemy_summon_cooldown += dt  # 更新敵人生成冷卻時間
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -61,11 +67,11 @@ while GameState.running:
     screen.fill((200, 200, 200))
     overlay = pygame.Surface((1200, 1200), pygame.SRCALPHA)
 
-    if enemy_summon_cooldown > 1 and len(enemy_group) < 4:
+    if GameState.enemy_summon_cooldown > 0.5 and len(enemy_group) < 4:
         # 每 1 秒生成一個敵人，最多 10 個
         enemy = Enemy(random.choice([PATH_1, PATH_2]))
         enemy_group.add(enemy)
-        enemy_summon_cooldown = 0.0
+        GameState.enemy_summon_cooldown = 0.0
 
     # 更新敵人
     enemy_group.update(dt)
@@ -77,12 +83,25 @@ while GameState.running:
     for enemy, bullet in hits.items():
         if bullet.has_target and bullet.target is not enemy:
             continue
-        elif bullet.is_effect:
-            continue
+
+        if bullet.is_effect:
+            if bullet.is_hitted(enemy):
+                continue
+
+            bullet.add_hit_enemy(enemy)
+
+        if not bullet.has_target:
+            enemy.health -= bullet.atk
+
         enemy.display_health -= bullet.atk
+
         if enemy.display_health <= 0:
             enemy.kill()  # 假設有 kill 方法來處理死亡
-        bullet.kill()  # 移除子彈
+        if not bullet.is_effect:
+            bullet.kill()  # 移除子彈
+        print(
+            f"health: {enemy.health}, display_health: {enemy.display_health}, atk: {bullet.atk}"
+        )
 
     # 繪製格子
     for x in range(10):

@@ -25,8 +25,22 @@ class Enemy(Item):
         self.health = 100  # 敵人生命值
         self.path_index = 0  # 當前路徑索引
         self.color = random.choice(ENEMY_COLORS)  # 隨機顏色
+        self._freeze_time = 0.0  # 凍結時間
+
+    @property
+    def freeze_time(self):
+        return self._freeze_time
+
+    @freeze_time.setter
+    def freeze_time(self, value):
+        self._freeze_time = max(self._freeze_time, value)  # 確保凍結時間不會減少
 
     def update(self, dt):
+        move_speed = self.speed * dt
+        if self.freeze_time > 0:
+            self._freeze_time -= dt
+            move_speed /= 2
+
         if self.path_index >= len(self.path):
             self.path_index = 0  # 重置路徑索引
 
@@ -47,8 +61,8 @@ class Enemy(Item):
             self.pos = target
             self.path_index += 1
         else:
-            self.pos[0] += dx / dist * self.speed * dt
-            self.pos[1] += dy / dist * self.speed * dt
+            self.pos[0] += dx / dist * move_speed
+            self.pos[1] += dy / dist * move_speed
 
     def draw(self, surface, zoom):
         screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])

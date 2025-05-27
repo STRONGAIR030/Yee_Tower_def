@@ -1,5 +1,6 @@
 import math
 import pygame
+from components.animation import Animation
 from constants import GRID_SIZE, MAP_REAL_SIZE
 from tool_function import transform_coordinates
 from typing import Dict, TYPE_CHECKING
@@ -82,36 +83,40 @@ def ease_in_out(t):  # 慢 -> 快 -> 慢
 
 
 class ExplodeEffect(Bullet):
-    def __init__(self, pos, range=5):
-        super().__init__(pos, 0)
+    def __init__(self, pos, atk, range=0.8):
+        super().__init__(pos, atk)
         self.is_effect = True  # 爆炸效果
         self.radius = 0  # 爆炸效果的大小(用於繪製)
         self.range = range * GRID_SIZE  # 爆炸範圍
         self.alpha = 128  # 初始透明度
         self.color = pygame.Color("#ff0000")  # 爆炸效果顏色
-        self.start_radius = self.radius  # 初始半徑
-        self.end_radius = self.range  # 結束半徑
-        self.duration = 1.5  # 爆炸效果持續時間
-        self.elapsed = 0.0  # 已經過的時間
+        self.scale_animation = Animation(0.2, 0, self.range)
+        self.alpha_animation = Animation(0.1, 128, 0, 0.2)
+        self.hit_enemy = set()
 
     @property
     def effect_color(self):
         return (self.color[0], self.color[1], self.color[2], self.alpha)
 
+    def is_hitted(self, enemy: "Enemy") -> bool:
+        return enemy in self.hit_enemy
+
+    def add_hit_enemy(self, enemy: "Enemy"):
+        if enemy not in self.hit_enemy:
+            self.hit_enemy.add(enemy)
+
     def update(self, dt):
-        self.elapsed += dt
-        t = min(self.elapsed / self.duration, 1.0)
-        if self.radius < self.range:
-            self.radius += self.start_radius + (
-                self.end_radius - self.start_radius
-            ) * ease_in_out(t)
-        if self.radius >= self.range:
-            self.alpha -= 256 * 2.5 * dt  # 漸變透明度
-        if self.alpha <= 0:
+        self.scale_animation.update(dt)
+        self.alpha_animation.update(dt)
+
+        # 更新爆炸效果的半徑和透明度
+        self.radius = self.scale_animation.value
+        self.alpha = int(self.alpha_animation.value)
+
+        if self.alpha_animation.is_complete:
             self.kill()
 
     def draw(self, surface, zoom):
-        print(self.radius, self.range)
         screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
         scaled_radius = int(self.radius * zoom)
 
@@ -133,7 +138,7 @@ class ExplodeBullet(TrackBullet):
 
     def kill(self):
         # 在子彈被銷毀時，創建爆炸效果
-        explode_effect = ExplodeEffect(self.pos, self.explode_range)
+        explode_effect = ExplodeEffect(self.pos, self.atk, self.explode_range)
         explode_effect.color = self.color
         self.group.add(explode_effect)  # 將爆炸效果添加到組中
         super().kill()  # 調用父類的 kill 方法
@@ -144,6 +149,7 @@ class StarBullet(Bullet):
 
     def __init__(self, pos, atk, angle=90):
         super().__init__(pos, atk, angle)
+        self.radius = 20  # 星形子彈的半徑
         self.speed = 100
         self.size = (self.radius * 2.5, self.radius * 2.5)  # 星形子彈的大小
         self.image = pygame.transform.scale(self.star_bullet_image, self.size)
@@ -157,7 +163,6 @@ class StarBullet(Bullet):
         super().update(dt)
 
     def draw(self, surface, zoom):
-        print(self.color)
         center_pox = transform_coordinates(self.pos[0], self.pos[1])
 
         scale_image = pygame.transform.smoothscale(
