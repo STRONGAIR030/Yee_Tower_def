@@ -86,7 +86,7 @@ class ExplodeEffect(Bullet):
         super().__init__(pos, 0)
         self.is_effect = True  # 爆炸效果
         self.radius = 0  # 爆炸效果的大小(用於繪製)
-        self.range = 1 * GRID_SIZE  # 爆炸範圍
+        self.range = range * GRID_SIZE  # 爆炸範圍
         self.alpha = 128  # 初始透明度
         self.color = pygame.Color("#ff0000")  # 爆炸效果顏色
         self.start_radius = self.radius  # 初始半徑
@@ -130,6 +130,13 @@ class ExplodeBullet(TrackBullet):
         super().__init__(pos, atk, target)
         self.color = pygame.Color("#ff0000")
         self.explode_range = range  # 爆炸範圍
+
+    def kill(self):
+        # 在子彈被銷毀時，創建爆炸效果
+        explode_effect = ExplodeEffect(self.pos, self.explode_range)
+        explode_effect.color = self.color
+        self.group.add(explode_effect)  # 將爆炸效果添加到組中
+        super().kill()  # 調用父類的 kill 方法
 
 
 class StarBullet(Bullet):

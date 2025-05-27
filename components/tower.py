@@ -2,7 +2,13 @@ import pygame
 import math
 from constants import GRID_GAP, GRID_SIZE
 from tool_function import find_max_health_enemy, tile_center, transform_coordinates
-from components.bullet import Bullet, ExplodeEffect, StarBullet, TrackBullet
+from components.bullet import (
+    Bullet,
+    ExplodeBullet,
+    ExplodeEffect,
+    StarBullet,
+    TrackBullet,
+)
 
 
 class Tower:
@@ -13,7 +19,7 @@ class Tower:
         self.shoot_cooldown = 0.0  # 每秒可以射擊一次
         self.shoot_rate = 10
         self.color = (0, 255, 0)  # 塔的顏色
-        self.bullet = TrackBullet
+        self.bullet = ExplodeBullet
 
     @property
     def radius(self):
@@ -43,12 +49,12 @@ class Tower:
         dx = target.pos[0] - self.pos[0]
         dy = target.pos[1] - self.pos[1]
         angle = math.degrees(math.atan2(-dy, dx))  # 計算角度
-        new_bullet = self.bullet([self.pos[0], self.pos[1]], self.atk)
+        new_bullet = self.bullet([self.pos[0], self.pos[1]], self.atk, angle)
         bullets.add(new_bullet)  # 將新子彈添加到子彈組中
 
     def shoot_track_bullet(self, target, bullets) -> None:
         target.health -= self.atk  # 對敵人造成傷害
-        new_bullet = self.bullet([self.pos[0], self.pos[1]], self.atk, target)
+        new_bullet = self.bullet([self.pos[0], self.pos[1]], self.atk, 10, target)
         bullets.add(new_bullet)  # 將新子彈添加到子彈組中
 
     def shoot(self, enemies, bullets) -> bool:
@@ -71,7 +77,7 @@ class TriangleTower(Tower):
         self.range = 2  # 三角塔的攻擊範圍更大
         self.shoot_rate = 0.5
         self.color = pygame.Color("#b30000")  # 三角塔的顏色
-        self.bullet = ExplodeEffect  # 使用星形子彈
+        self.bullet = StarBullet  # 使用星形子彈
 
     def shoot(self, enemies, bullets) -> bool:
         can_shoot = []
