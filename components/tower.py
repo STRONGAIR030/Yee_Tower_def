@@ -9,6 +9,7 @@ from components.bullet import (
     Bullet,
     ExplodeBullet,
     ExplodeEffect,
+    Laserbullet,
     StarBullet,
     TrackBullet,
 )
@@ -192,3 +193,22 @@ class PentagonTower(Tower):
     def update(self, dt, enemies, bullets):
         self.freeze_enemy(enemies)  # 更新時凍結敵人
         super().update(dt, enemies, bullets)
+
+
+class RatctangleTower(Tower):
+    def __init__(self, grid_pos):
+        super().__init__(grid_pos)
+        self.atk = 8  # 長方形塔的攻擊力
+        self.range = 1.5  # 長方形塔的攻擊範圍
+        self.shoot_rate = 2
+        self.color = pygame.Color("#b300b3")  # 長方形塔的顏色
+        self.bullet = Laserbullet  # 使用追蹤子彈
+
+    def shoot(self, enemies, bullets) -> bool:
+        can_shoot = self.check_enemy_in_range(enemies)
+
+        if len(can_shoot) > 0:
+            self.shoot_bullet(can_shoot[0], bullets)  # 發射追蹤子彈
+            return True
+
+        return False  # 沒有敵人可以射擊

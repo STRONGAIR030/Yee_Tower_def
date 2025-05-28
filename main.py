@@ -10,7 +10,14 @@ from constants import (
 )
 from components.enemy import Enemy
 from game_stat import GameState
-from components.tower import PentagonTower, SquareTower, StarTower, Tower, TriangleTower
+from components.tower import (
+    PentagonTower,
+    RatctangleTower,
+    SquareTower,
+    StarTower,
+    Tower,
+    TriangleTower,
+)
 from components.Item_group import ItemGroup
 from tool_function import check_hit_radius_group, load_image
 from components.tile import Tile
@@ -33,6 +40,7 @@ towers = [
     SquareTower((4, 7)),
     StarTower((5, 5)),
     PentagonTower((6, 6)),
+    RatctangleTower((6, 1)),
 ]  # 塔的列表
 
 

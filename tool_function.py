@@ -84,3 +84,10 @@ def find_max_health_enemy(enemies) -> "Item | None":
 def load_image(name: str):
     image = pygame.image.load(os.path.join(IMAGE_PATH, name)).convert_alpha()
     return image
+
+
+def rotate_point(cx, cy, x, y, angle_deg):
+    angle_rad = math.radians(angle_deg)
+    rx = cx + x * math.cos(angle_rad) - y * math.sin(angle_rad)
+    ry = cy + x * math.sin(angle_rad) + y * math.cos(angle_rad)
+    return rx, ry

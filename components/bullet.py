@@ -1,8 +1,8 @@
 import math
 import pygame
-from components.animation import Animation
+from components.animation import Animation, AnimationManager
 from constants import GRID_SIZE, MAP_REAL_SIZE
-from tool_function import transform_coordinates
+from tool_function import rotate_point, transform_coordinates
 from typing import Dict, TYPE_CHECKING
 from components.Item_group import Item
 
@@ -171,3 +171,62 @@ class StarBullet(Bullet):
         rotated_image = pygame.transform.rotate(scale_image, self.rotate_deg)
         image_rect = rotated_image.get_rect(center=center_pox)
         surface.blit(rotated_image, image_rect)
+
+
+class Laserbullet(Bullet):
+    def __init__(self, pos, atk, angle=90):
+        super().__init__(pos, atk, angle)
+        self.is_effect = True
+        self.hit_enemy = set()  # 記錄已經擊中的敵人
+        self.radius = 5  # 雷射子彈的半徑
+        self.size = (self.radius * 1, self.radius * 3)
+        self.rect_point = ((0.5, 0), (0.5, 3), (-0.5, 3), (-0.5, 0))  # 雷射子彈的大小
+        self.speed = 0  # 雷射子彈速度
+        self.color = pygame.Color("#ff0000")  # 雷射子彈顏色
+        self.scale_animation1 = Animation(0.2, 0, self.size[1])
+        self.scale_animation2 = AnimationManager(
+            [
+                [0.2, self.size[1], self.size[1] * 0.8],
+                [0.2, self.size[1] * 0.8, self.size[1]],
+            ]
+        )
+
+    def is_hitted(self, enemy: "Enemy") -> bool:
+        return enemy in self.hit_enemy
+
+    def add_hit_enemy(self, enemy: "Enemy"):
+        if enemy not in self.hit_enemy:
+            self.hit_enemy.add(enemy)
+
+    def update(self, dt):
+        self.scale_animation1.update(dt)
+        self.scale_animation2.update(dt)
+
+        # 更新子彈的大小
+        self.size = (
+            self.radius * 1,
+            self.scale_animation1.value,
+        )
+
+    def draw(self, surface, zoom):
+        screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
+        rect_points = []
+        for point in self.rect_point:
+            rotated_point = rotate_point(
+                self.pos[0],
+                self.pos[1],
+                point[0] * self.size[0] * zoom,
+                point[1] * self.size[1] * zoom,
+                self.dircetion_angle,
+            )
+            scaled_point = (
+                int(rotated_point[0]) + screen_x,
+                int(rotated_point[1]) + screen_y,
+            )
+            rect_points.append(scaled_point)
+
+        pygame.draw.polygon(
+            surface,
+            self.color,
+            rect_points,
+        )

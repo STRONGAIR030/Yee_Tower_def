@@ -74,10 +74,13 @@ class Animation:
 
 class AnimationManager:
     def __init__(self, animation_array=[], repet: int = 0):
-        self.animations: List["Animation"] = self.create_animation_list(animation_array)
+        print(animation_array)
+        self.animations: List["Animation"] = self.create_animation_list(
+            list(animation_array)
+        )
         self.repeat = repet
 
-    def create_animation_list(animation_array):
+    def create_animation_list(self, animation_array: list):
         animation_list = []
         delay = 0.0
         for animation in animation_array:
@@ -86,9 +89,9 @@ class AnimationManager:
                 duration=animation[0],
                 start_value=animation[1],
                 end_value=animation[2],
-                delay=animation[3] if len(animation) > 5 else delay,
-                repeat=animation[4] if len(animation) > 6 else 0,
-                easing_function=animation[5] if len(animation) > 3 else "ease_in_out",
+                delay=animation[3] if len(animation) > 3 else delay,
+                repeat=animation[4] if len(animation) > 4 else 0,
+                easing_function=animation[5] if len(animation) > 5 else "ease_in_out",
             )
             animation_list.append(new_animation)
         return animation_list
