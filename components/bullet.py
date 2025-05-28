@@ -178,18 +178,29 @@ class Laserbullet(Bullet):
         super().__init__(pos, atk, angle)
         self.is_effect = True
         self.hit_enemy = set()  # 記錄已經擊中的敵人
-        self.radius = 5  # 雷射子彈的半徑
-        self.size = (self.radius * 1, self.radius * 3)
-        self.rect_point = ((0.5, 0), (0.5, 3), (-0.5, 3), (-0.5, 0))  # 雷射子彈的大小
+        self.radius = 1  # 雷射子彈的半徑
+        self.size = (0, 0)
+        self.alpha = 0
+        self.rect_point = ((0, 0.5), (1, 0.5), (1, -0.5), (0, -0.5))  # 雷射子彈的大小
         self.speed = 0  # 雷射子彈速度
-        self.color = pygame.Color("#ff0000")  # 雷射子彈顏色
-        self.scale_animation1 = Animation(0.2, 0, self.size[1])
-        self.scale_animation2 = AnimationManager(
+        self.color = pygame.Color("#2a9aab")  # 雷射子彈顏色
+        self.scale_animation1 = AnimationManager(
             [
-                [0.2, self.size[1], self.size[1] * 0.8],
-                [0.2, self.size[1] * 0.8, self.size[1]],
-            ]
+                [0.07, 1, 0.8, 0.07],
+                [0.07, 0.8, 1],
+            ],
+            -1,
         )
+        self.alpha_animation = Animation(0.3, 0, 255)
+        self.kill_alpha_animation = Animation(0.2, 255, 0)
+        self.scale_animation2 = Animation(0.2, 0, 3)
+        self.kill_animation1 = Animation(0.2, 1, 0, 0.1)
+        self.kill_animation2 = Animation(0.2, 3, 0)
+        self.kill_time = 1
+
+    @property
+    def effect_color(self):
+        return (self.color[0], self.color[1], self.color[2], self.alpha)
 
     def is_hitted(self, enemy: "Enemy") -> bool:
         return enemy in self.hit_enemy
@@ -201,32 +212,45 @@ class Laserbullet(Bullet):
     def update(self, dt):
         self.scale_animation1.update(dt)
         self.scale_animation2.update(dt)
+        self.alpha_animation.update(dt)
 
         # 更新子彈的大小
         self.size = (
-            self.radius * 1,
-            self.scale_animation1.value,
+            self.scale_animation2.value * GRID_SIZE,
+            self.scale_animation1.value * GRID_SIZE,
         )
+        self.alpha = int(self.alpha_animation.value)
+        self.kill_time -= dt
+        if self.kill_time <= 0:
+            self.kill_animation1.update(dt)
+            self.kill_animation2.update(dt)
+            self.kill_alpha_animation.update(dt)
+            if self.kill_animation1.is_complete:
+                self.kill()
+            else:
+                self.size = (
+                    3 * GRID_SIZE,
+                    self.kill_animation1.value * GRID_SIZE,
+                )
+                self.alpha = int(self.kill_alpha_animation.value)
 
     def draw(self, surface, zoom):
-        screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
         rect_points = []
         for point in self.rect_point:
             rotated_point = rotate_point(
                 self.pos[0],
                 self.pos[1],
-                point[0] * self.size[0] * zoom,
-                point[1] * self.size[1] * zoom,
+                point[0] * self.size[0] + self.pos[0],
+                point[1] * self.size[1] + self.pos[1],
                 self.dircetion_angle,
             )
-            scaled_point = (
-                int(rotated_point[0]) + screen_x,
-                int(rotated_point[1]) + screen_y,
+
+            rect_points.append(
+                transform_coordinates(rotated_point[0], rotated_point[1])
             )
-            rect_points.append(scaled_point)
 
         pygame.draw.polygon(
             surface,
-            self.color,
+            self.effect_color,
             rect_points,
         )

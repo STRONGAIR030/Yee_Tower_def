@@ -200,7 +200,7 @@ class RatctangleTower(Tower):
         super().__init__(grid_pos)
         self.atk = 8  # 長方形塔的攻擊力
         self.range = 1.5  # 長方形塔的攻擊範圍
-        self.shoot_rate = 2
+        self.shoot_rate = 0.5
         self.color = pygame.Color("#b300b3")  # 長方形塔的顏色
         self.bullet = Laserbullet  # 使用追蹤子彈
 

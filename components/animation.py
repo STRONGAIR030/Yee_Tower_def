@@ -61,7 +61,9 @@ class Animation:
             self.delay_time -= dt
         else:
             if self.is_complete:
-                if self.repeat > 0 or self.repeat == -1:
+                if self.repeat == -1:
+                    self.reset()
+                elif self.repeat > 0:
                     self.repeat -= 1
                     self.reset()
             else:
@@ -100,9 +102,26 @@ class AnimationManager:
     def is_complete(self) -> bool:
         return all(animation.is_complete for animation in self.animations)
 
+    @property
+    def value(self) -> List[float]:
+        value = 0
+        for animation in self.animations:
+            value = animation.value
+            if not animation.is_complete:
+                break
+        return value
+
     def update(self, dt: float) -> None:
+        be_reset = False
+        if self.is_complete and self.repeat == 0:
+            return
+        elif self.is_complete and self.repeat == -1:
+            be_reset = True
+        elif self.is_complete and self.repeat > 0:
+            self.repeat -= 1
+            be_reset = True
+
         for animation in self.animations:
             animation.update(dt)
-            if self.is_complete:
-                if self.repeat > 0 or self.repeat == -1:
-                    animation.reset()
+            if be_reset:
+                animation.reset()

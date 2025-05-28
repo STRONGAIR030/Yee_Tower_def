@@ -60,15 +60,15 @@ while running:
             camera_offset[1] = wordy * ZOOM - my
     screen.fill((200, 200, 200))
 
-    rect_point = ((0, -0.5), (3, -0.5), (3, 0.5), (0, 0.5))
+    rect_point = ((0, 0.5), (3, 0.5), (3, -0.5), (0, -0.5))
     pos = (0, 0)
     scale_point = []
     for point in rect_point:
-        x, y = transform_coordinates(
-            point[0] * GRID_SIZE + pos[0], point[1] * GRID_SIZE + pos[1]
-        )
-        print(point, x, y)
+        x = point[0] * GRID_SIZE + pos[0]
+        y = point[1] * GRID_SIZE + pos[1]
         x, y = rotate_point(pos[0], pos[1], x, y, 90)  # 假設沒有旋轉
+        x, y = transform_coordinates(x, y)
+        print(point, x, y)
         scale_point.append((x, y))
 
     pygame.draw.polygon(

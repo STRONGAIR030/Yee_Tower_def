@@ -87,7 +87,9 @@ def load_image(name: str):
 
 
 def rotate_point(cx, cy, x, y, angle_deg):
-    angle_rad = math.radians(angle_deg)
-    rx = cx + x * math.cos(angle_rad) - y * math.sin(angle_rad)
-    ry = cy + x * math.sin(angle_rad) + y * math.cos(angle_rad)
+    angle_rad = math.radians(-angle_deg)
+    dx = x - cx
+    dy = y - cy
+    rx = cx + dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
+    ry = cy + dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
     return rx, ry
