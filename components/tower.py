@@ -4,7 +4,7 @@ import pygame
 import math
 from typing import TYPE_CHECKING, List
 from constants import GRID_GAP, GRID_SIZE
-from tool_function import find_max_health_enemy, tile_center, transform_coordinates
+from tool.tool_function import find_max_health_enemy, tile_center, transform_coordinates
 from components.bullet import (
     Bullet,
     ExplodeBullet,
@@ -181,14 +181,17 @@ class PentagonTower(Tower):
             enemy.freeze_time = self.freeze_time  # 設置敵人的凍結時間
 
     def shoot(self, enemies, bullets) -> bool:
-        can_shoot = self.check_enemy_in_range(enemies)
+        can_shoot = self.check_enemy_in_range(enemies, enemy_num=len(enemies))
+        print(f"can_shoot: {can_shoot}")
         for enemy in can_shoot:
             if enemy.health > 0:
                 enemy.health -= self.atk
                 enemy.display_health -= self.atk
             print(f"health: {enemy.health}, display_health: {enemy.display_health}")
 
-        return True  # 沒有敵人可以射擊
+        if len(can_shoot) > 0:
+            return True
+        return False
 
     def update(self, dt, enemies, bullets):
         self.freeze_enemy(enemies)  # 更新時凍結敵人

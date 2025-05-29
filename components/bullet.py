@@ -2,7 +2,7 @@ import math
 import pygame
 from components.animation import Animation, AnimationManager
 from constants import GRID_SIZE, MAP_REAL_SIZE
-from tool_function import rotate_point, transform_coordinates
+from tool.tool_function import rotate_point, transform_coordinates
 from typing import Dict, TYPE_CHECKING
 from components.Item_group import Item
 
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Bullet(Item):
     def __init__(self, pos, atk, angle=180):
+        self.hit_box = "circle"
         self.has_target = False  # 是否有目標
         self.is_effect = False  # 是否是爆炸效果
         self.atk = atk  # 子彈傷害
@@ -176,10 +177,11 @@ class StarBullet(Bullet):
 class Laserbullet(Bullet):
     def __init__(self, pos, atk, angle=90):
         super().__init__(pos, atk, angle)
+        self.hit_box = "polygon"  # 雷射子彈的碰撞盒為多邊形
         self.is_effect = True
         self.hit_enemy = set()  # 記錄已經擊中的敵人
         self.radius = 1  # 雷射子彈的半徑
-        self.size = (0, 0)
+        self.size = (0.1, 0.1)
         self.alpha = 0
         self.rect_point = ((0, 0.5), (1, 0.5), (1, -0.5), (0, -0.5))  # 雷射子彈的大小
         self.speed = 0  # 雷射子彈速度
@@ -197,6 +199,20 @@ class Laserbullet(Bullet):
         self.kill_animation1 = Animation(0.2, 1, 0, 0.1)
         self.kill_animation2 = Animation(0.2, 3, 0)
         self.kill_time = 1
+
+    @property
+    def polygon(self):
+        polygon_points = []
+        for point in self.rect_point:
+            rotated_point = rotate_point(
+                self.pos[0],
+                self.pos[1],
+                point[0] * self.size[0] + self.pos[0],
+                point[1] * self.size[1] + self.pos[1],
+                self.dircetion_angle,
+            )
+            polygon_points.append(rotated_point)
+        return polygon_points
 
     @property
     def effect_color(self):
@@ -236,18 +252,8 @@ class Laserbullet(Bullet):
 
     def draw(self, surface, zoom):
         rect_points = []
-        for point in self.rect_point:
-            rotated_point = rotate_point(
-                self.pos[0],
-                self.pos[1],
-                point[0] * self.size[0] + self.pos[0],
-                point[1] * self.size[1] + self.pos[1],
-                self.dircetion_angle,
-            )
-
-            rect_points.append(
-                transform_coordinates(rotated_point[0], rotated_point[1])
-            )
+        for point in self.polygon:
+            rect_points.append(transform_coordinates(point[0], point[1]))
 
         pygame.draw.polygon(
             surface,

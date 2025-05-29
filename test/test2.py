@@ -6,7 +6,7 @@ import pygame
 import math
 import random
 
-from tool_function import rotate_point
+from tool.tool_function import rotate_point
 
 # 初始化
 pygame.init()

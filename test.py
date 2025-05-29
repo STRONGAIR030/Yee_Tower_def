@@ -6,7 +6,8 @@ import pygame
 import math
 import random
 
-from tool_function import rotate_point
+from tool.hitbox_tool import polygon_vs_circle
+from tool.tool_function import rotate_point
 
 # 初始化
 pygame.init()
@@ -61,15 +62,18 @@ while running:
     screen.fill((200, 200, 200))
 
     rect_point = ((0, 0.5), (3, 0.5), (3, -0.5), (0, -0.5))
-    pos = (0, 0)
+    pos = pygame.mouse.get_pos()
     scale_point = []
+    polygon_point = []
     for point in rect_point:
         x = point[0] * GRID_SIZE + pos[0]
         y = point[1] * GRID_SIZE + pos[1]
         x, y = rotate_point(pos[0], pos[1], x, y, 90)  # 假設沒有旋轉
+        polygon_point.append((x, y))
         x, y = transform_coordinates(x, y)
-        print(point, x, y)
         scale_point.append((x, y))
+
+    print(polygon_vs_circle(polygon_point, (500, 500), GRID_SIZE / 2))
 
     pygame.draw.polygon(
         screen,
@@ -79,7 +83,7 @@ while running:
     pygame.draw.circle(
         screen,
         (0, 255, 0),
-        transform_coordinates(pos[0], pos[1]),
+        transform_coordinates(500, 500),
         int(GRID_SIZE * ZOOM / 2),
     )
 

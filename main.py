@@ -19,7 +19,7 @@ from components.tower import (
     TriangleTower,
 )
 from components.Item_group import ItemGroup
-from tool_function import check_hit_radius_group, load_image
+from tool.tool_function import check_hit_group, check_hit_radius_group, load_image
 from components.tile import Tile
 
 
@@ -36,7 +36,7 @@ bullets = ItemGroup()  # 子彈群組
 towers = [
     Tower((2, 3)),
     Tower((4, 5)),
-    TriangleTower((5, 7)),
+    # TriangleTower((5, 7)),
     SquareTower((4, 7)),
     StarTower((5, 5)),
     PentagonTower((6, 6)),
@@ -87,7 +87,11 @@ while GameState.running:
     for tower in towers:
         tower.update(dt, enemy_group, bullets)
 
-    hits = check_hit_radius_group(enemy_group, bullets.group)
+    for enemy in enemy_group:
+        if enemy.display_health <= 0:
+            enemy.kill()
+
+    hits = check_hit_group(enemy_group, bullets.group)
     for enemy, bullet in hits.items():
         if bullet.has_target and bullet.target is not enemy:
             continue

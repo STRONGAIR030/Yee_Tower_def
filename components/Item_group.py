@@ -4,6 +4,7 @@ from typing import List
 
 class Item(ABC):
     def __init__(self, group=None):
+        self.hit_box = None
         self.group: "ItemGroup" = None  # ItemGroup 的實例
         self.pos = [0, 0]  # 預設位置
 

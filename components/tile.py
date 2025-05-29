@@ -1,6 +1,6 @@
 import pygame
 from constants import GRID_SIZE, GRID_GAP
-from tool_function import transform_coordinates
+from tool.tool_function import transform_coordinates
 
 
 class Tile:
