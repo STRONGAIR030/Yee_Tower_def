@@ -2,6 +2,7 @@ import pygame
 
 from components.tower import PentagonTower, RatctangleTower, StarTower, TriangleTower
 from constants import GRID_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH
+from game_stat import GameState
 
 
 class TowerListItem:
@@ -13,9 +14,25 @@ class TowerListItem:
         self.image = image
         self.radius = GRID_SIZE / 2 * zoom * self.zoom
         self.size = (GRID_SIZE * zoom, GRID_SIZE * zoom)
+        self.boerder_rect = pygame.Rect(
+            self.pos[0] - GRID_SIZE / 2,
+            self.pos[1] - GRID_SIZE / 2,
+            self.size[0],
+            self.size[1],
+        )
+        self.boerder_rect.center = (self.pos[0], self.pos[1])
         self.real_size = (self.size[0] * self.zoom, self.size[1] * self.zoom)
+        self.is_selected = False
         if self.image:
             self.image = pygame.transform.scale(self.image, self.size)
+
+    def update(self, dt):
+        if GameState.selected_tile and self.boerder_rect.collidepoint(
+            GameState.mouse_pos
+        ):
+            self.is_selected = True
+        else:
+            self.is_selected = False
 
     def draw(self, surface):
         if self.type == "circle":
@@ -62,7 +79,8 @@ class TowerListItem:
 class TowerList:
     def __init__(self):
         zoom = 1
-        self.pos = (0, 0)
+        self.can_draw = False
+        self.pos = (0, SCREEN_HEIGHT * 0.8)
         self.size = (SCREEN_WIDTH, SCREEN_HEIGHT * 0.2)
         self.gap = 40
         circle_tower = TowerListItem(
@@ -134,12 +152,26 @@ class TowerList:
         item_size = 0
         for i, item in enumerate(self.tower_items):
             item.pos = (
-                self.pos[0] + item_size + self.gap * i + self.padding,
+                self.pos[0]
+                + item_size
+                + self.gap * i
+                + self.padding
+                + item.size[0] / 2,
                 self.pos[1] + self.size[1] / 2,
             )
             item_size += item.size[0]
 
+    def update(self, dt):
+        if GameState.selected_tile:
+            self.can_draw = True
+        else:
+            self.can_draw = False
+        for item in self.tower_items:
+            item.update(dt)
+
     def draw(self, surface):
+        if not self.can_draw:
+            return
         pygame.draw.rect(
             surface,
             pygame.Color("#ffffff"),

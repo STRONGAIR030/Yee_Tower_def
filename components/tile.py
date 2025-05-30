@@ -9,9 +9,9 @@ class Tile:
         self.x = x
         self.y = y
         self.type = type
-        self.can_build = True  # 是否可以建造塔防
-        if type == "path":
-            self.can_build = False
+        self.can_build = False  # 是否可以建造塔防
+        if type == "normal":
+            self.can_build = True
         self.builded = False  # 是否已經建造了塔防
         self.pos = (x * (GRID_SIZE + GRID_GAP), y * (GRID_SIZE + GRID_GAP))
         self.rect = pygame.Rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
@@ -25,7 +25,6 @@ class Tile:
         if self.is_select:
             if GameState.left_click or (GameState.right_click and not hover):
                 self.is_select = False
-                GameState.selected_tile = None
         elif GameState.right_click and self.can_build and not self.builded:
             if self.can_build and hover:
                 self.is_select = True

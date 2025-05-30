@@ -8,6 +8,7 @@ from constants import (
     HOME_PATH,
     ENEMY_SUMMON_PATH_1,
     ENEMY_SUMMON_PATH_2,
+    SCREEN_WIDTH,
 )
 from components.enemy import (
     BlueTriangleEnemy,
@@ -33,7 +34,7 @@ from components.tile import Tile
 
 # 初始化
 pygame.init()
-screen = pygame.display.set_mode((1200, 1200))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_WIDTH))
 pygame.display.set_caption("Yee Tower Defense")
 clock = pygame.time.Clock()
 
@@ -130,6 +131,11 @@ while GameState.running:
     # 更新敵人
     for tile in tile_list:
         tile.update(dt)
+
+    tower_buy_list.update(dt)
+    print(GameState.selected_tile)
+    if all(not tile.is_select for tile in tile_list):
+        GameState.selected_tile = None
     enemy_group.update(dt)
     bullets.update(dt)
     for tower in towers:
