@@ -164,7 +164,6 @@ while GameState.running:
         )
 
     # 繪製格子
-    tower_buy_list.draw(overlay, GameState.zoom)
     for tile in tile_list:
         tile.draw(overlay, GameState.zoom)
 
@@ -176,6 +175,7 @@ while GameState.running:
 
     for bullet in bullets:
         bullet.draw(overlay, GameState.zoom)
+    tower_buy_list.draw(overlay)
 
     screen.blit(overlay, (0, 0))
     pygame.display.flip()  # 顯示整個畫面內容
