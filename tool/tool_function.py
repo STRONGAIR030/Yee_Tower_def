@@ -24,6 +24,12 @@ def transform_coordinates(x, y):
     return [screen_x, screen_y]
 
 
+def screen_to_world_coordinates(x, y):
+    world_x = (x + GameState.camera_offset[0]) / GameState.zoom
+    world_y = (y + GameState.camera_offset[1]) / GameState.zoom
+    return [world_x, world_y]
+
+
 def zoom_coordinates(value):
     return int(value * GameState.zoom)
 
@@ -143,3 +149,14 @@ def rotate_point(cx, cy, x, y, angle_deg):
     rx = cx + dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
     ry = cy + dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
     return rx, ry
+
+
+def get_price(level, base=100, late_rate=1.5, switch_level=8, power=1.1):
+    if level <= switch_level:
+        return int(base + 10 * (level - 1) * base * 0.2 + (1 * (1.5**level) - 1))
+    else:
+        early = int(
+            base + 10 * (switch_level - 1) * base * 0.2 + (1 * (1.5**switch_level) - 1)
+        )
+        growth = late_rate ** ((level - switch_level) ** power)
+        return int(base * early * growth)

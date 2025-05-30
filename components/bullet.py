@@ -76,24 +76,14 @@ class TrackBullet(Bullet):
         )
 
 
-def ease_in_out(t):  # 慢 -> 快 -> 慢
-    if t < 0.5:
-        return 2 * t * t
-    else:
-        return 1 - 2 * (1 - t) * (1 - t)
-
-
-class ExplodeEffect(Bullet):
-    def __init__(self, pos, atk, range=0.8):
-        super().__init__(pos, atk)
-        self.is_effect = True  # 爆炸效果
-        self.radius = 0  # 爆炸效果的大小(用於繪製)
-        self.range = range * GRID_SIZE  # 爆炸範圍
-        self.alpha = 128  # 初始透明度
-        self.color = pygame.Color("#ff0000")  # 爆炸效果顏色
-        self.scale_animation = Animation(0.2, 0, self.range)
-        self.alpha_animation = Animation(0.1, 128, 0, 0.2)
-        self.hit_enemy = set()
+class EffectBullet(Bullet):
+    def __init__(self, pos, atk, angle=180):
+        super().__init__(pos, atk, angle)
+        self.is_effect = True  # 是否是效果子彈
+        self.hit_enemy = set()  # 記錄已經擊中的敵人
+        self.radius = 0  # 初始半徑為 0
+        self.alpha = 255  # 初始透明度
+        self.color = pygame.Color("#f6f600")  # 子彈顏色
 
     @property
     def effect_color(self):
@@ -105,6 +95,18 @@ class ExplodeEffect(Bullet):
     def add_hit_enemy(self, enemy: "Enemy"):
         if enemy not in self.hit_enemy:
             self.hit_enemy.add(enemy)
+
+
+class ExplodeEffect(EffectBullet):
+    def __init__(self, pos, atk, range=0.8):
+        super().__init__(pos, atk)
+        self.radius = 0  # 爆炸效果的大小(用於繪製)
+        self.range = range * GRID_SIZE  # 爆炸範圍
+        self.alpha = 128  # 初始透明度
+        self.color = pygame.Color("#ff0000")  # 爆炸效果顏色
+        self.scale_animation = Animation(0.2, 0, self.range)
+        self.alpha_animation = Animation(0.1, 128, 0, 0.2)
+        self.hit_enemy = set()
 
     def update(self, dt):
         self.scale_animation.update(dt)
@@ -166,7 +168,7 @@ class StarBullet(Bullet):
     def draw(self, surface, zoom):
         center_pox = transform_coordinates(self.pos[0], self.pos[1])
 
-        scale_image = pygame.transform.smoothscale(
+        scale_image = pygame.transform.scale(
             self.image, (int(self.size[0] * zoom), int(self.size[1] * zoom))
         )
         rotated_image = pygame.transform.rotate(scale_image, self.rotate_deg)
@@ -174,16 +176,22 @@ class StarBullet(Bullet):
         surface.blit(rotated_image, image_rect)
 
 
-class Laserbullet(Bullet):
-    def __init__(self, pos, atk, angle=90):
+class Laserbullet(EffectBullet):
+    def __init__(self, pos, atk, size, angle=90):
         super().__init__(pos, atk, angle)
         self.hit_box = "polygon"  # 雷射子彈的碰撞盒為多邊形
         self.is_effect = True
         self.hit_enemy = set()  # 記錄已經擊中的敵人
         self.radius = 1  # 雷射子彈的半徑
         self.size = (0.1, 0.1)
+        self.original_size = size  # 原始大小
         self.alpha = 0
-        self.rect_point = ((0, 0.5), (1, 0.5), (1, -0.5), (0, -0.5))  # 雷射子彈的大小
+        self.rect_point = (
+            (0, 0.5),
+            (1, 0.5),
+            (1, -0.5),
+            (0, -0.5),
+        )  # 雷射子彈的大小
         self.speed = 0  # 雷射子彈速度
         self.color = pygame.Color("#2a9aab")  # 雷射子彈顏色
         self.scale_animation1 = AnimationManager(
@@ -195,9 +203,9 @@ class Laserbullet(Bullet):
         )
         self.alpha_animation = Animation(0.3, 0, 255)
         self.kill_alpha_animation = Animation(0.2, 255, 0)
-        self.scale_animation2 = Animation(0.2, 0, 3)
+        self.scale_animation2 = Animation(0.2, 0, size)
         self.kill_animation1 = Animation(0.2, 1, 0, 0.1)
-        self.kill_animation2 = Animation(0.2, 3, 0)
+        self.kill_animation2 = Animation(0.2, size, 0)
         self.kill_time = 1
 
     @property
@@ -213,17 +221,6 @@ class Laserbullet(Bullet):
             )
             polygon_points.append(rotated_point)
         return polygon_points
-
-    @property
-    def effect_color(self):
-        return (self.color[0], self.color[1], self.color[2], self.alpha)
-
-    def is_hitted(self, enemy: "Enemy") -> bool:
-        return enemy in self.hit_enemy
-
-    def add_hit_enemy(self, enemy: "Enemy"):
-        if enemy not in self.hit_enemy:
-            self.hit_enemy.add(enemy)
 
     def update(self, dt):
         self.scale_animation1.update(dt)
@@ -245,7 +242,7 @@ class Laserbullet(Bullet):
                 self.kill()
             else:
                 self.size = (
-                    3 * GRID_SIZE,
+                    self.original_size * GRID_SIZE,
                     self.kill_animation1.value * GRID_SIZE,
                 )
                 self.alpha = int(self.kill_alpha_animation.value)
