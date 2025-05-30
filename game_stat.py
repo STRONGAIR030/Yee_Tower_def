@@ -8,6 +8,7 @@ class GameState:
     running = True
     last_mouse_pos = (0, 0)
     enemy_summon_cooldown = 0
+    total_enemy_count = 0
     tower_upgrade_cooldown = 0
     right_click = False
     left_click = False

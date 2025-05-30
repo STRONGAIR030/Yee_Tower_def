@@ -3,6 +3,7 @@ import math
 from tkinter import NO
 import pygame
 import random
+from game_stat import GameState
 from tool.tool_function import transform_coordinates
 from constants import GRID_SIZE, GRID_GAP, ENEMY_COLORS
 from components.Item_group import Item
@@ -23,7 +24,9 @@ class Enemy(Item):
         ]
         self.speed = 100  # 每秒移動 100 px
         self.radius_ratio = 0.1  # 半徑比例
-        self.display_health = self.health = 100  # 敵人生命值
+        self.display_health = self.health = (
+            100 * (GameState.total_enemy_count + 1) * 0.1
+        )  # 敵人生命值
         self.path_index = 0  # 當前路徑索引
         self.color = random.choice(ENEMY_COLORS)  # 隨機顏色
         self._freeze_time = 0.0  # 凍結時間
@@ -147,7 +150,6 @@ class TriangleEnemy(Enemy):
         rotated_image = pygame.transform.rotate(scale_image, self.rotate_deg)
         image_rect = rotated_image.get_rect(center=center_pox)
         surface.blit(rotated_image, image_rect)
-        pygame.draw.circle(surface, self.color, center_pox, int(self.radius * zoom), 3)
 
 
 class BlueTriangleEnemy(TriangleEnemy):
@@ -173,11 +175,15 @@ class BossSquareEnemy(SqureEnemy):
         self.color = pygame.Color("#ff0000")  # 紅色方形敵人
         self.health = self.display_health = self.health * 10  # 增加生命值
         self.speed = self.speed * 0.8
-        self.radius_ratio = 0.3  # 增加半徑比例
+        self.radius_ratio = 0.2  # 增加半徑比例
         self.rect.size = (
             GRID_SIZE * self.radius_ratio,
             GRID_SIZE * self.radius_ratio,
         )  # 調整矩形大小
+        self.size = (
+            GRID_SIZE * self.radius_ratio * 2,
+            GRID_SIZE * self.radius_ratio * 2,
+        )
 
 
 class BossTriangleEnemy(TriangleEnemy):

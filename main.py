@@ -56,14 +56,16 @@ enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組
 towers = [
     # Tower((2, 3)),
-    # Tower((4, 5)),
-    # TriangleTower((0, 7)),
-    # SquareTower((4, 7)),
+    Tower((4, 5)),
+    TriangleTower((0, 7)),
+    SquareTower((4, 7)),
     # StarTower((5, 5)),
-    # PentagonTower((6, 6)),
-    # RatctangleTower((6, 1)),
+    PentagonTower((6, 6)),
+    RatctangleTower((6, 1)),
 ]  # 塔的列表
 tile_list = []
+enemy_list = [Enemy, TriangleEnemy, SqureEnemy, BlueTriangleEnemy]
+boss_list = [BossSquareEnemy, BossTriangleEnemy]
 for x in range(10):
     for y in range(10):
         if (x, y) == HOME_PATH:
@@ -119,10 +121,16 @@ while GameState.running:
     screen.fill((200, 200, 200))
     overlay = pygame.Surface((1200, 1200), pygame.SRCALPHA)
 
-    if GameState.enemy_summon_cooldown > 0.5 and len(enemy_group) < 4:
+    if GameState.enemy_summon_cooldown > 0.2 and len(enemy_group) < 30:
         # 每 1 秒生成一個敵人，最多 10 個
-        enemy = BossSquareEnemy(random.choice([PATH_1, PATH_2]))
+        selected_list = enemy_list
+        if GameState.total_enemy_count % 10 == 0 and GameState.total_enemy_count > 0:
+            selected_list = boss_list
+        selected_enemy = random.choice(selected_list)
+        enemy = selected_enemy(random.choice([PATH_1, PATH_2]))
         enemy_group.add(enemy)
+        GameState.total_enemy_count += 1
+
         for tower in towers:
             tower.upgrade()
             tower.upgrade()
@@ -133,7 +141,6 @@ while GameState.running:
         tile.update(dt)
 
     tower_buy_list.update(dt)
-    print(GameState.selected_tile)
     if all(not tile.is_select for tile in tile_list):
         GameState.selected_tile = None
     enemy_group.update(dt)
