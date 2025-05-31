@@ -82,6 +82,7 @@ class TowerList:
         self.can_draw = False
         self.pos = (0, SCREEN_HEIGHT * 0.8)
         self.size = (SCREEN_WIDTH, SCREEN_HEIGHT * 0.2)
+        self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
         self.gap = 40
         circle_tower = TowerListItem(
             type="circle",
@@ -164,7 +165,14 @@ class TowerList:
     def update(self, dt):
         if GameState.selected_tile:
             self.can_draw = True
+            if GameState.selected_tile and self.rect.collidepoint(
+                GameState.mouse_pos[0], GameState.mouse_pos[1]
+            ):
+                GameState.is_on_tower_list = True
+            else:
+                GameState.is_on_tower_list = False
         else:
+            GameState.is_on_tower_list = False
             self.can_draw = False
         for item in self.tower_items:
             item.update(dt)

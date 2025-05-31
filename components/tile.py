@@ -23,7 +23,9 @@ class Tile:
         )
         hover = self.rect.collidepoint(mouse_x, mouse_y)
         if self.is_select:
-            if GameState.left_click or (GameState.right_click and not hover):
+            if (
+                GameState.left_click or (GameState.right_click and not hover)
+            ) and not GameState.is_on_tower_list:
                 self.is_select = False
         elif GameState.right_click and self.can_build and not self.builded:
             if self.can_build and hover:

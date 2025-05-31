@@ -16,3 +16,4 @@ class GameState:
     money = 1000
     selected_tile = None
     selected_tower = None
+    is_on_tower_list = False
