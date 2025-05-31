@@ -3,7 +3,7 @@ import pygame
 from components.animation import Animation, AnimationManager
 from constants import GRID_SIZE, MAP_REAL_SIZE
 from tool.tool_function import rotate_point, transform_coordinates
-from typing import Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from components.Item_group import Item
 
 if TYPE_CHECKING:

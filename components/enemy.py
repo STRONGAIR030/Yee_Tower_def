@@ -1,6 +1,4 @@
-from encodings.punycode import T
 import math
-from tkinter import NO
 import pygame
 import random
 from game_stat import GameState
