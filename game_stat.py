@@ -1,6 +1,3 @@
-import select
-
-
 class GameState:
     zoom = 1.0
     camera_offset = [0, 0]
@@ -13,7 +10,9 @@ class GameState:
     right_click = False
     left_click = False
     mouse_pos = (0, 0)
-    money = 1000
+    money = 20
+    home_health = 50
     selected_tile = None
     selected_tower = None
     is_on_tower_list = False
+    is_on_ok_button = False

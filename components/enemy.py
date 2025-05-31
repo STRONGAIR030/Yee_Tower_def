@@ -44,13 +44,16 @@ class Enemy(Item):
         self._freeze_time = max(self._freeze_time, value)  # 確保凍結時間不會減少
 
     def update(self, dt):
+        if self.path_index >= len(self.path):
+            GameState.home_health -= 1
+            self.display_health = 0
+            super().kill()
+            return 0, 0
+
         move_speed = self.speed * dt
         if self.freeze_time > 0:
             self._freeze_time -= dt
             move_speed /= 2
-
-        if self.path_index >= len(self.path):
-            self.path_index = 0  # 重置路徑索引
 
         target = [
             self.path[self.path_index][0] * (GRID_SIZE + GRID_GAP)
@@ -78,6 +81,10 @@ class Enemy(Item):
         screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
         radius = int(self.radius * zoom)
         pygame.draw.circle(surface, self.color, (screen_x, screen_y), radius)
+
+    def kill(self):
+        GameState.money += 1
+        super().kill()
 
 
 class SqureEnemy(Enemy):
@@ -185,6 +192,10 @@ class BossSquareEnemy(SqureEnemy):
             GRID_SIZE * self.radius_ratio * 2,
         )
 
+    def kill(self):
+        GameState.money += 100
+        super().kill()
+
 
 class BossTriangleEnemy(TriangleEnemy):
     def __init__(self, path):
@@ -194,3 +205,7 @@ class BossTriangleEnemy(TriangleEnemy):
         self.speed = self.speed * 0.8
         self.radius_ratio = 0.2  # 增加半徑比例
         self.image = pygame.transform.scale(self.triangle_enemy_image, self.size)
+
+    def kill(self):
+        GameState.money += 100
+        super().kill()

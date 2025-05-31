@@ -1,7 +1,7 @@
 import pygame
 import random
 from components.bullet import StarBullet
-from components.tower_list import TowerList
+from components.tower_list import OkButton, TowerList
 from constants import (
     PATH_1,
     PATH_2,
@@ -28,7 +28,7 @@ from components.tower import (
     TriangleTower,
 )
 from components.Item_group import ItemGroup
-from tool.tool_function import check_hit_group, check_hit_radius_group, load_image
+from tool.tool_function import check_hit_group, load_image
 from components.tile import Tile
 
 
@@ -49,20 +49,20 @@ TriangleTower.triangle_tower_image = load_image("triangle_tower.png")
 RatctangleTower.ractangle_tower_image = load_image("ractangle_tower.png")
 PentagonTower.pentagon_tower_image = load_image("pentagon_tower.png")
 StarTower.star_tower_image = load_image("star_bullet.png")
+OkButton.ok_button_image = load_image("ok_button.png")
 
 tower_buy_list = TowerList()
-
+tower_select_list = [
+    Tower,
+    TriangleTower,
+    SquareTower,
+    StarTower,
+    PentagonTower,
+    RatctangleTower,
+]
 enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組
-towers = [
-    # Tower((2, 3)),
-    Tower((4, 5)),
-    TriangleTower((0, 7)),
-    SquareTower((4, 7)),
-    # StarTower((5, 5)),
-    PentagonTower((6, 6)),
-    RatctangleTower((6, 1)),
-]  # 塔的列表
+towers = []  # 塔的列表
 tile_list = []
 enemy_list = [Enemy, TriangleEnemy, SqureEnemy, BlueTriangleEnemy]
 boss_list = [BossSquareEnemy, BossTriangleEnemy]
@@ -121,7 +121,10 @@ while GameState.running:
     screen.fill((200, 200, 200))
     overlay = pygame.Surface((1200, 1200), pygame.SRCALPHA)
 
-    if GameState.enemy_summon_cooldown > 0.2 and len(enemy_group) < 30:
+    if GameState.home_health < 0:
+        GameState.running = False
+
+    if GameState.enemy_summon_cooldown > 0.5 and len(enemy_group) < 30:
         # 每 1 秒生成一個敵人，最多 10 個
         selected_list = enemy_list
         if GameState.total_enemy_count % 10 == 0 and GameState.total_enemy_count > 0:
@@ -145,6 +148,20 @@ while GameState.running:
         GameState.selected_tile = None
     enemy_group.update(dt)
     bullets.update(dt)
+
+    if GameState.is_on_ok_button and GameState.left_click:
+        for item in tower_buy_list.tower_items:
+            if item.is_selected:
+                select_tower = tower_select_list[item.tower_id]
+                if GameState.money > select_tower.base_price:
+                    GameState.money -= select_tower.base_price
+                    new_tower = select_tower(GameState.selected_tile)
+                    towers.append(new_tower)
+                GameState.is_on_ok_button = False
+                GameState.is_on_tower_list = False
+                GameState.selected_tile = None
+                break
+
     for tower in towers:
         tower.update(dt, enemy_group, bullets)
 
@@ -172,11 +189,16 @@ while GameState.running:
             enemy.kill()  # 假設有 kill 方法來處理死亡
         if not bullet.is_effect:
             bullet.kill()  # 移除子彈
-        print(
-            f"health: {enemy.health}, display_health: {enemy.display_health}, atk: {bullet.atk}"
-        )
 
-    # 繪製格子
+    font = pygame.font.Font(None, 24)
+    text_surface1 = font.render(f"money: {GameState.money}", True, (0, 0, 0))
+    text_surface2 = font.render(f"health: {GameState.home_health}", True, (0, 0, 0))
+
+    text_rect1 = text_surface1.get_rect()
+    text_rect1.topleft = (20, 20)
+    text_rect2 = text_surface2.get_rect()
+    text_rect2.topright = (SCREEN_WIDTH - 20, 20)
+
     for tile in tile_list:
         tile.draw(overlay, GameState.zoom)
 
@@ -191,6 +213,9 @@ while GameState.running:
     tower_buy_list.draw(overlay)
 
     screen.blit(overlay, (0, 0))
+    screen.blit(text_surface1, text_rect1)
+    screen.blit(text_surface2, text_rect2)
     pygame.display.flip()  # 顯示整個畫面內容
 
 pygame.quit()  # 結束遊戲
+print("Game over")

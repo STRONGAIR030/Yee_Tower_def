@@ -38,6 +38,8 @@ class DrawImage:
 
 
 class Tower:
+    base_price = 1
+
     def __init__(self, grid_pos):
         self.level = 1
         self.atk = 1
@@ -151,6 +153,7 @@ class Tower:
 # 三角塔(狙擊塔)
 class TriangleTower(Tower, DrawImage):
     triangle_tower_image = None  # 靜態變量，用於存儲三角塔的圖片
+    base_price = 5
 
     def __init__(self, grid_pos):
         Tower.__init__(self, grid_pos)
@@ -188,6 +191,8 @@ class TriangleTower(Tower, DrawImage):
 
 
 class SquareTower(Tower):
+    base_price = 15
+
     def __init__(self, grid_pos):
         super().__init__(grid_pos)
         self.atk = 2  # 方形塔的攻擊力
@@ -244,6 +249,7 @@ class SquareTower(Tower):
 
 class StarTower(Tower, DrawImage):
     star_tower_image = None  # 靜態變量，用於存儲星形塔的圖片
+    base_price = 5
 
     def __init__(self, grid_pos):
         Tower.__init__(self, grid_pos)
@@ -298,6 +304,7 @@ class StarTower(Tower, DrawImage):
 
 class PentagonTower(Tower, DrawImage):
     pentagon_tower_image = None  # 靜態變量，用於存儲五邊形塔的圖片
+    base_price = 20
 
     def __init__(self, grid_pos):
         Tower.__init__(self, grid_pos)
@@ -357,6 +364,7 @@ class PentagonTower(Tower, DrawImage):
 
 class RatctangleTower(Tower, DrawImage):
     ractangle_tower_image = None  # 靜態變量，用於存儲長方形塔的圖片
+    base_price = 20
 
     def __init__(self, grid_pos):
         Tower.__init__(self, grid_pos)
