@@ -4,7 +4,7 @@ class GameState:
     dragging = False
     running = True
     last_mouse_pos = (0, 0)
-    enemy_summon_cooldown = 0
+    enemy_summon_cooldown = -30
     total_enemy_count = 0
     tower_upgrade_cooldown = 0
     right_click = False
@@ -16,3 +16,4 @@ class GameState:
     selected_tower = None
     is_on_tower_list = False
     is_on_ok_button = False
+    build_tower = 1

@@ -1,12 +1,14 @@
 import pygame
 
+from components import tower
 from components.tower import PentagonTower, RatctangleTower, StarTower, TriangleTower
 from constants import GRID_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH
 from game_stat import GameState
+from tool.tool_function import get_price
 
 
 class TowerListItem:
-    def __init__(self, tower_id, pos, type, color=None, image=None, zoom=1):
+    def __init__(self, tower_id, pos, type, tower_type, color=None, image=None, zoom=1):
         self.tower_id = tower_id
         self.zoom = 0.8
         self.pos = pos
@@ -15,6 +17,7 @@ class TowerListItem:
         self.image = image
         self.radius = GRID_SIZE / 2 * zoom * self.zoom
         self.size = (GRID_SIZE * zoom, GRID_SIZE * zoom)
+        self.tower_type = tower_type
         self.boerder_rect = pygame.Rect(
             self.pos[0] - GRID_SIZE / 2,
             self.pos[1] - GRID_SIZE / 2,
@@ -26,6 +29,10 @@ class TowerListItem:
         self.is_selected = False
         if self.image:
             self.image = pygame.transform.scale(self.image, self.size)
+
+    @property
+    def price(self):
+        return get_price(GameState.build_tower, self.tower_type.base_price)
 
     def update(self, dt):
         hover = self.boerder_rect.collidepoint(
@@ -68,6 +75,11 @@ class TowerListItem:
             scale_image = pygame.transform.scale(self.image, self.real_size)
             image_rect = scale_image.get_rect(center=(self.pos[0], self.pos[1]))
             surface.blit(scale_image, image_rect)
+
+        font = pygame.font.Font(None, 24)
+        text = font.render(f"{self.price}$", True, pygame.Color("#000000"))
+        text_rect = text.get_rect(center=(self.pos[0], self.pos[1] + 50))
+        surface.blit(text, text_rect)
 
         self.boerder_rect.center = (self.pos[0], self.pos[1])
         color = pygame.Color("#000000")
@@ -122,6 +134,7 @@ class TowerList:
             ),
             color=(0, 255, 0),
             zoom=zoom,
+            tower_type=tower.Tower,
         )
         triangle_tower = TowerListItem(
             tower_id=1,
@@ -132,6 +145,7 @@ class TowerList:
             ),
             image=TriangleTower.triangle_tower_image,
             zoom=zoom,
+            tower_type=tower.TriangleTower,
         )
         square_tower = TowerListItem(
             tower_id=2,
@@ -142,6 +156,7 @@ class TowerList:
             ),
             color=pygame.Color("#ff0000"),
             zoom=zoom,
+            tower_type=tower.SquareTower,
         )
         star_tower = TowerListItem(
             tower_id=3,
@@ -152,6 +167,7 @@ class TowerList:
             ),
             image=StarTower.star_tower_image,
             zoom=zoom,
+            tower_type=tower.StarTower,
         )
         pentagon_tower = TowerListItem(
             tower_id=4,
@@ -162,6 +178,7 @@ class TowerList:
             ),
             image=PentagonTower.pentagon_tower_image,
             zoom=zoom,
+            tower_type=tower.PentagonTower,
         )
         rectangle_tower = TowerListItem(
             tower_id=5,
@@ -172,6 +189,7 @@ class TowerList:
             ),
             image=RatctangleTower.ractangle_tower_image,
             zoom=zoom,
+            tower_type=tower.RatctangleTower,
         )
         self.tower_items = [
             circle_tower,

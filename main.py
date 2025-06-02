@@ -28,7 +28,7 @@ from components.tower import (
     TriangleTower,
 )
 from components.Item_group import ItemGroup
-from tool.tool_function import check_hit_group, load_image
+from tool.tool_function import check_hit_group, get_price, load_image
 from components.tile import Tile
 
 
@@ -83,6 +83,7 @@ for x in range(10):
 while GameState.running:
     dt = clock.tick(60) / 1000
     GameState.enemy_summon_cooldown += dt  # 更新敵人生成冷卻時間
+    GameState.tower_upgrade_cooldown += dt  # 更新塔防升級冷卻時間
     GameState.mouse_pos = pygame.mouse.get_pos()  # 更新滑鼠位置
 
     for event in pygame.event.get():
@@ -127,17 +128,20 @@ while GameState.running:
     if GameState.enemy_summon_cooldown > 0.5 and len(enemy_group) < 30:
         # 每 1 秒生成一個敵人，最多 10 個
         selected_list = enemy_list
-        if GameState.total_enemy_count % 10 == 0 and GameState.total_enemy_count > 0:
+        if GameState.total_enemy_count % 100 == 0 and GameState.total_enemy_count > 0:
             selected_list = boss_list
         selected_enemy = random.choice(selected_list)
         enemy = selected_enemy(random.choice([PATH_1, PATH_2]))
         enemy_group.add(enemy)
         GameState.total_enemy_count += 1
 
-        for tower in towers:
-            tower.upgrade()
-            tower.upgrade()
         GameState.enemy_summon_cooldown = 0.0
+
+    if GameState.tower_upgrade_cooldown > 0.5:
+        if len(towers) > 0:
+            tower = random.choice(towers)
+            tower.upgrade()
+        GameState.tower_upgrade_cooldown = 0.0
 
     # 更新敵人
     for tile in tile_list:
@@ -153,7 +157,10 @@ while GameState.running:
         for item in tower_buy_list.tower_items:
             if item.is_selected:
                 select_tower = tower_select_list[item.tower_id]
-                if GameState.money > select_tower.base_price:
+                if GameState.money >= get_price(
+                    GameState.build_tower, select_tower.base_price
+                ):
+                    GameState.build_tower += 1
                     GameState.money -= select_tower.base_price
                     new_tower = select_tower(GameState.selected_tile)
                     towers.append(new_tower)
