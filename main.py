@@ -60,13 +60,7 @@ tower_select_list = [  # 塔防選擇列表
 ]
 enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組
-towers = [
-    TriangleTower((0, 0)),  # 初始塔防
-    SquareTower((1, 0)),
-    StarTower((2, 0)),
-    PentagonTower((3, 0)),
-    RatctangleTower((4, 0)),
-]  # 塔的列表
+towers = []  # 塔的列表
 tile_list = []  # 地圖格子列表
 # 可選擇的敵人和Boss列表
 enemy_list = [Enemy, TriangleEnemy, SqureEnemy, BlueTriangleEnemy]
