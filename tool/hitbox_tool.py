@@ -1,24 +1,31 @@
 import pygame
 
+# 碰撞檢測工具函數
 
+
+# 計算兩個向量的點積
 def dot(v1, v2):
     return v1[0] * v2[0] + v1[1] * v2[1]
 
 
+# 將多邊形投影到一個軸上，返回最小和最大值
 def project(polygon, axis):
     dots = [dot(p, axis) for p in polygon]
     return min(dots), max(dots)
 
 
+# 限制值在指定範圍內
 def clamp(val, min_val, max_val):
     return max(min_val, min(max_val, val))
 
 
+# 正規化向量
 def normalize(v):
     length = (v[0] ** 2 + v[1] ** 2) ** 0.5
     return (v[0] / length, v[1] / length)
 
 
+# 獲取多邊形的所有法向量（軸）
 def get_axes(polygon):
     axes = []
     for i in range(len(polygon)):
@@ -30,6 +37,7 @@ def get_axes(polygon):
     return axes
 
 
+# 計算點到線段的距離
 def point_to_segment_distance(px, py, x1, y1, x2, y2):
     dx, dy = x2 - x1, y2 - y1
     if dx == dy == 0:
@@ -40,6 +48,7 @@ def point_to_segment_distance(px, py, x1, y1, x2, y2):
     return ((px - proj_x) ** 2 + (py - proj_y) ** 2) ** 0.5
 
 
+# 判斷點是否在凸多邊形內
 def point_in_convex_polygon(point, polygon):
     sign = None
 
@@ -59,11 +68,16 @@ def point_in_convex_polygon(point, polygon):
     return True
 
 
+# 將矩形轉換為多邊形
 def rect_to_polygon(rect):
     x, y, w, h = rect
     return [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
 
 
+# 判斷多邊形與多邊形、圓形、矩形之間的碰撞
+
+
+# 判斷多邊形與多邊形之間的碰撞
 def polygon_vs_polygon(p1, p2):
     for polygon in (p1, p2):
         for axis in get_axes(polygon):
@@ -74,6 +88,7 @@ def polygon_vs_polygon(p1, p2):
     return True
 
 
+# 判斷多邊形與圓形之間的碰撞
 def polygon_vs_circle(polygon, center, radius):
     cx, cy = center
     if point_in_convex_polygon(center, polygon):
@@ -87,11 +102,13 @@ def polygon_vs_circle(polygon, center, radius):
     return False
 
 
+# 判斷多邊形與矩形之間的碰撞
 def polygon_vs_rect(polygon, rect):
     rect_poly = rect_to_polygon(rect)
     return polygon_vs_polygon(polygon, rect_poly)
 
 
+# 判斷圓形與圓形之間的碰撞
 def circle_vs_circle(center1, radius1, center2, radius2):
     dx = center2[0] - center1[0]
     dy = center2[1] - center1[1]
@@ -100,6 +117,7 @@ def circle_vs_circle(center1, radius1, center2, radius2):
     return dist_squared <= radius_sum * radius_sum
 
 
+# 判斷圓形與矩形之間的碰撞
 def rect_vs_circle(rect, center, radius):
     rx, ry, rw, rh = rect
     cx, cy = center
@@ -114,5 +132,6 @@ def rect_vs_circle(rect, center, radius):
     return dx * dx + dy * dy <= radius * radius
 
 
+# 判斷矩形與矩形之間的碰撞
 def rect_vs_rect(r1, r2):
     return r1.colliderect(r2)
