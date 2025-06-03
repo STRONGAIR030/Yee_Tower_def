@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from components.enemy import Enemy  # 避免循環引用，僅在類型檢查時導入
 
 
+# 繪製圖片的類別
+# 用於將圖片縮放到指定大小並繪製在指定位置
 class DrawImage:
     def __init__(self, item_image, size, zoom):
         self.image = item_image
@@ -35,54 +37,55 @@ class DrawImage:
         surface.blit(scale_image, image_rect)
 
 
+# 基礎塔
 class Tower:
-    base_price = 1
+    base_price = 1  # 基礎塔的價格
 
     def __init__(self, grid_pos):
-        self.level = 1
-        self.atk = 1
+        self.level = 1  # 塔的等級
+        self.atk = 1  # 塔的攻擊力
         self.pos = tile_center(grid_pos[0], grid_pos[1])  # 塔的位置
-        self._range = 1
+        self._range = 1  # 塔的攻擊範圍
         self.shoot_cooldown = 0.0  # 每秒可以射擊一次
-        self._shoot_rate = 1
-        self._max_shoot_rate = 10
-        self._max_range = 3
-        self._price = 1
+        self._shoot_rate = 1  # 塔的射擊速率
+        self._max_shoot_rate = 10  # 最大射擊速率
+        self._max_range = 3  # 最大射程
+        self._price = 1  # 塔的價格
         self.color = (0, 255, 0)  # 塔的顏色
         self.bullet = TrackBullet
 
     @property
-    def price(self):
+    def price(self):  # 獲取塔的價格
         return get_price(self.level, self._price)
 
     @property
-    def shoot_rate(self):
+    def shoot_rate(self):  # 獲取塔的射擊速率
         return self._shoot_rate
 
-    @shoot_rate.setter
+    @shoot_rate.setter  # 設置塔的射擊速率
     def shoot_rate(self, value):
         self._shoot_rate = min(value, self._max_shoot_rate)  # 確保射擊速率不超過最大值
 
     @property
-    def range(self):
+    def range(self):  # 獲取塔的射程
         return self._range
 
-    @range.setter
+    @range.setter  # 設置塔的射程
     def range(self, value):
         self._range = min(value, self._max_range)  # 確保射程不超過最大值
 
     @property
-    def radius(self):
+    def radius(self):  # 獲取塔的射程半徑
         return GRID_SIZE * (self.range + 0.5) + GRID_GAP * self.range
 
-    def update(self, dt, enemies, bullets):
-        self.shoot_cooldown += dt
-        if self.shoot_cooldown >= 1 / self.shoot_rate:
-            shoot = self.shoot(enemies=enemies, bullets=bullets)
-            if shoot:
-                self.shoot_cooldown = 0.0
+    def update(self, dt, enemies, bullets):  # 更新塔的狀態
+        self.shoot_cooldown += dt  # 增加射擊冷卻時間
+        if self.shoot_cooldown >= 1 / self.shoot_rate:  # 如果射擊冷卻時間達到射擊速率
+            shoot = self.shoot(enemies=enemies, bullets=bullets)  # 嘗試射擊敵人
+            if shoot:  # 如果成功射擊
+                self.shoot_cooldown = 0.0  # 重置射擊冷卻時間
 
-    def draw_range(self, surface, zoom):
+    def draw_range(self, surface, zoom):  # 繪製塔的射程範圍
         screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
         pygame.draw.circle(
             surface,
@@ -92,8 +95,10 @@ class Tower:
             1,
         )
 
-    def draw(self, surface, zoom):
-        screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
+    def draw(self, surface, zoom):  # 繪製塔
+        screen_x, screen_y = transform_coordinates(
+            self.pos[0], self.pos[1]
+        )  # 將塔的位置轉換為螢幕座標
         pygame.draw.circle(
             surface,
             self.color,
@@ -102,7 +107,7 @@ class Tower:
         )
         self.draw_range(surface, zoom)  # 繪製射程範圍
 
-    def shoot_bullet(self, target, bullets) -> float:
+    def shoot_bullet(self, target, bullets) -> float:  # 發射子彈
         dx = target.pos[0] - self.pos[0]
         dy = target.pos[1] - self.pos[1]
         angle = math.degrees(math.atan2(-dy, dx))  # 計算角度
@@ -110,19 +115,21 @@ class Tower:
         bullets.add(new_bullet)  # 將新子彈添加到子彈組中
         return angle  # 返回子彈的角度
 
-    def shoot_track_bullet(self, target, bullets) -> None:
+    def shoot_track_bullet(self, target, bullets) -> None:  # 發射追蹤子彈
         target.health -= self.atk  # 對敵人造成傷害
         new_bullet = self.bullet([self.pos[0], self.pos[1]], self.atk, target)
         bullets.add(new_bullet)  # 將新子彈添加到子彈組中
 
-    def shoot_explode_bullet(self, target, bullets) -> None:
+    def shoot_explode_bullet(self, target, bullets) -> None:  # 發射爆炸子彈
         target.health -= self.atk
         new_bullet = self.bullet(
             [self.pos[0], self.pos[1]], self.atk, self.explode_range, target
         )
         bullets.add(new_bullet)  # 將新子彈添加到子彈組中
 
-    def check_enemy_in_range(self, enemies, enemy_num: int = 1) -> List["Enemy"]:
+    def check_enemy_in_range(
+        self, enemies, enemy_num: int = 1
+    ) -> List["Enemy"]:  # 檢查敵人是否在射程內
         can_shoot = []
         for enemy in enemies:
             dx = enemy.pos[0] - self.pos[0]
@@ -134,7 +141,7 @@ class Tower:
                 return can_shoot
         return can_shoot
 
-    def shoot(self, enemies, bullets) -> bool:
+    def shoot(self, enemies, bullets) -> bool:  # 嘗試射擊敵人
         enemy = self.check_enemy_in_range(enemies)
         if len(enemy) != 0:
             self.shoot_track_bullet(enemy[0], bullets)
@@ -142,7 +149,7 @@ class Tower:
 
         return False  # 沒有敵人可以射擊
 
-    def upgrade(self):
+    def upgrade(self):  # 升級塔的屬性
         self.atk += 1
         self.range += 0.1
         self.shoot_rate += 0.1
@@ -188,6 +195,7 @@ class TriangleTower(Tower, DrawImage):
         self.draw_range(surface, zoom)  # 繪製射程範圍
 
 
+# SquareTower(方形塔)
 class SquareTower(Tower):
     base_price = 15
 
@@ -245,6 +253,7 @@ class SquareTower(Tower):
         self.draw_range(surface, zoom)
 
 
+# StarTower(星形塔)
 class StarTower(Tower, DrawImage):
     star_tower_image = None  # 靜態變量，用於存儲星形塔的圖片
     base_price = 5
@@ -278,7 +287,7 @@ class StarTower(Tower, DrawImage):
         self.shoot_rate += 0.1
         self.bullet_num += 0.3
 
-    def shoot_bullet(self, target, bullets):
+    def shoot_bullet(self, target, bullets):  # 發射星形子彈
         angle = random.uniform(0, 360)
         d_angle = 360 / int(self.bullet_num)
         for i in range(int(self.bullet_num)):
@@ -300,6 +309,7 @@ class StarTower(Tower, DrawImage):
         self.draw_range(surface, zoom)  # 繪製射程範圍
 
 
+# 五邊形塔
 class PentagonTower(Tower, DrawImage):
     pentagon_tower_image = None  # 靜態變量，用於存儲五邊形塔的圖片
     base_price = 20
@@ -335,7 +345,7 @@ class PentagonTower(Tower, DrawImage):
         self.shoot_rate += 0.1
         self.freeze_time += 0.5
 
-    def freeze_enemy(self, enemies):
+    def freeze_enemy(self, enemies):  # 凍結敵人
         can_freeze = self.check_enemy_in_range(enemies, enemy_num=len(enemies))
         for enemy in can_freeze:
             enemy.freeze_time = self.freeze_time  # 設置敵人的凍結時間
@@ -360,6 +370,7 @@ class PentagonTower(Tower, DrawImage):
         self.draw_range(surface, zoom)  # 繪製射程範圍
 
 
+# 長方形塔
 class RatctangleTower(Tower, DrawImage):
     ractangle_tower_image = None  # 靜態變量，用於存儲長方形塔的圖片
     base_price = 20
@@ -386,7 +397,7 @@ class RatctangleTower(Tower, DrawImage):
         self.range += 0.1
         self.shoot_rate += 0.1
 
-    def shoot_laser(self, target, bullets) -> None:
+    def shoot_laser(self, target, bullets) -> None:  # 發射激光子彈
         dx = target.pos[0] - self.pos[0]
         dy = target.pos[1] - self.pos[1]
         angle = math.degrees(math.atan2(-dy, dx))  # 計算角度
