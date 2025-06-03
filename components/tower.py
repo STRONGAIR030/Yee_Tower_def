@@ -40,7 +40,6 @@ class DrawImage:
 # 基礎塔
 class Tower:
     base_price = 1  # 基礎塔的價格'
-    shoot_sound = None
 
     def __init__(self, grid_pos):
         self.level = 1  # 塔的等級
@@ -146,7 +145,6 @@ class Tower:
         enemy = self.check_enemy_in_range(enemies)
         if len(enemy) != 0:
             self.shoot_track_bullet(enemy[0], bullets)
-            Tower.shoot_sound.play()  # 播放塔的射擊音效
             return True
 
         return False  # 沒有敵人可以射擊
@@ -188,7 +186,6 @@ class TriangleTower(Tower, DrawImage):
 
         if target:
             self.shoot_track_bullet(target, bullets)  # 發射子彈
-            Tower.shoot_sound.play()  # 播放塔的射擊音效
             return True  # 成功射擊
 
         return False  # 沒有敵人可以射擊
@@ -235,7 +232,6 @@ class SquareTower(Tower):
 
         if len(can_shoot) > 0:
             self.shoot_explode_bullet(can_shoot[0], bullets)  # 發射爆炸子彈
-            Tower.shoot_sound.play()  # 播放塔的射擊音效
             return True
 
         return False  # 沒有敵人可以射擊

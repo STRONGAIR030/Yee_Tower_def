@@ -203,6 +203,7 @@ class BossSquareEnemy(SqureEnemy):
             GRID_SIZE * self.radius_ratio * 2,
             GRID_SIZE * self.radius_ratio * 2,
         )
+        self.square_boss_sound.set_volume(1)  # 設置音效音量
         self.square_boss_sound.play()  # 播放 Boss 敵人音效
 
     def kill(self):

@@ -54,7 +54,6 @@ Laserbullet.laser_sound = load_sound("laser.wav")
 ExplodeEffect.explode_effect_sound = load_sound("explode.wav")
 BossSquareEnemy.square_boss_sound = load_sound("square_boss.wav")
 BossTriangleEnemy.triangle_boss_sound = load_sound("triangle_boss.wav")
-Tower.shoot_sound = load_sound("shoot.wav")
 
 
 # 遊戲物件群主

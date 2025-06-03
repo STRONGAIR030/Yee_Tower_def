@@ -78,7 +78,6 @@ class Animation:
 # AnimationManager 類別，用於管理連續動畫效果
 class AnimationManager:
     def __init__(self, animation_array=[], repet: int = 0):
-        print(animation_array)
         self.animations: List["Animation"] = self.create_animation_list(
             list(animation_array)
         )

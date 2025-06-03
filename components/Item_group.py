@@ -22,7 +22,7 @@ class Item(ABC):
             self.group.remove(self)
         else:
             print("No group to remove from")
-        print("Item killed")
+        # print("Item killed")
         # 在這裡可以添加更多邏輯，例如增加分數或播放音效
 
 
