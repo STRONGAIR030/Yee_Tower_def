@@ -187,6 +187,8 @@ class BlueTriangleEnemy(TriangleEnemy):
 
 # 方形 Boss 敵人類別，继承自方形敵人
 class BossSquareEnemy(SqureEnemy):
+    square_boss_sound = None  # Boss 敵人的音效
+
     def __init__(self, path):
         super().__init__(path)
         self.color = pygame.Color("#ff0000")  # 紅色方形敵人
@@ -201,6 +203,7 @@ class BossSquareEnemy(SqureEnemy):
             GRID_SIZE * self.radius_ratio * 2,
             GRID_SIZE * self.radius_ratio * 2,
         )
+        self.square_boss_sound.play()  # 播放 Boss 敵人音效
 
     def kill(self):
         GameState.money += 100  # 每殺死一個 Boss 獲得 100 金幣
@@ -209,6 +212,8 @@ class BossSquareEnemy(SqureEnemy):
 
 # Boss 三角形敵人類別，繼承自三角形敵人
 class BossTriangleEnemy(TriangleEnemy):
+    triangle_boss_sound = None  # Boss 敵人的音效
+
     def __init__(self, path):
         super().__init__(path)
         self.color = pygame.Color("#ff0000")  # 紅色三角形敵人
@@ -216,6 +221,7 @@ class BossTriangleEnemy(TriangleEnemy):
         self.speed = self.speed * 0.8
         self.radius_ratio = 0.2  # 增加半徑比例
         self.image = pygame.transform.scale(self.triangle_enemy_image, self.size)
+        self.triangle_boss_sound.play()
 
     def kill(self):
         GameState.money += 100  # 每殺死一個 Boss 獲得 100 金幣

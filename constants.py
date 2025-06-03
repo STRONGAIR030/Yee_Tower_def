@@ -55,3 +55,4 @@ MAP_REAL_SIZE = [  # 實際地圖大小
     (GRID_SIZE + GRID_GAP) * MAP_SIZE,
 ]
 IMAGE_PATH = os.path.join(os.path.dirname(__file__), "assets", "images")  # 圖片資源路徑
+SOUND_PATH = os.path.join(os.path.dirname(__file__), "assets", "sounds")  # 圖片資源路徑

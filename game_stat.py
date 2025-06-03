@@ -12,7 +12,7 @@ class GameState:
     right_click = False  # 右鍵點擊狀態
     left_click = False  # 左鍵點擊狀態
     mouse_pos = (0, 0)  # 當前滑鼠位置
-    money = 20  # 初始金錢
+    money = 200  # 初始金錢
     home_health = 50  # 家園生命值
     selected_tile = None  # 當前選中的格子
     selected_tower = None  # 當前選中的塔防

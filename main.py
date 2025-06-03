@@ -1,6 +1,6 @@
 import pygame
 import random
-from components.bullet import StarBullet
+from components.bullet import ExplodeEffect, Laserbullet, StarBullet
 from components.tower_list import OkButton, TowerList
 from constants import (
     PATH_1,
@@ -28,12 +28,13 @@ from components.tower import (
     TriangleTower,
 )
 from components.Item_group import ItemGroup
-from tool.tool_function import check_hit_group, get_price, load_image
+from tool.tool_function import check_hit_group, get_price, load_image, load_sound
 from components.tile import Tile
 
 
 # 初始化
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_WIDTH))
 pygame.display.set_caption("Yee Tower Defense")
 clock = pygame.time.Clock()
@@ -47,6 +48,13 @@ RatctangleTower.ractangle_tower_image = load_image("ractangle_tower.png")
 PentagonTower.pentagon_tower_image = load_image("pentagon_tower.png")
 StarTower.star_tower_image = load_image("star_bullet.png")
 OkButton.ok_button_image = load_image("ok_button.png")
+
+# 載入音效
+Laserbullet.laser_sound = load_sound("laser.wav")
+ExplodeEffect.explode_effect_sound = load_sound("explode.wav")
+BossSquareEnemy.square_boss_sound = load_sound("square_boss.wav")
+BossTriangleEnemy.triangle_boss_sound = load_sound("triangle_boss.wav")
+
 
 # 遊戲物件群主
 tower_buy_list = TowerList()  # 塔防購買列表

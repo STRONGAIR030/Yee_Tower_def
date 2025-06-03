@@ -2,7 +2,7 @@ import math
 import pygame
 import os
 from typing import Dict, TYPE_CHECKING
-from constants import GRID_GAP, GRID_SIZE, IMAGE_PATH
+from constants import GRID_GAP, GRID_SIZE, IMAGE_PATH, SOUND_PATH
 from game_stat import GameState
 from tool.hitbox_tool import (
     circle_vs_circle,
@@ -105,6 +105,13 @@ def load_image(name: str):
     return image
 
 
+# 載入聲音
+def load_sound(name: str):
+    sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, name))
+    return sound
+
+
+# 依cx, cy為中心點，將點(x, y)繞中心點旋轉angle_deg度
 def rotate_point(cx, cy, x, y, angle_deg):
     angle_rad = math.radians(-angle_deg)
     dx = x - cx
@@ -114,6 +121,7 @@ def rotate_point(cx, cy, x, y, angle_deg):
     return rx, ry
 
 
+# 獲取塔的價格(會隨等級變化)
 def get_price(level, base=100, late_rate=1.5, switch_level=8, power=1.1):
     if level <= switch_level:
         return int(base + 10 * (level - 1) * base * 0.2 + (1 * (1.5**level) - 1))

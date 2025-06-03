@@ -104,6 +104,8 @@ class EffectBullet(Bullet):
 
 
 class ExplodeEffect(EffectBullet):
+    explode_effect_sound = None  # 爆炸效果音效
+
     def __init__(self, pos, atk, range=0.8):
         super().__init__(pos, atk)
         self.radius = 0  # 爆炸效果的大小(用於繪製)
@@ -113,6 +115,7 @@ class ExplodeEffect(EffectBullet):
         self.scale_animation = Animation(0.2, 0, self.range)
         self.alpha_animation = Animation(0.1, 128, 0, 0.2)
         self.hit_enemy = set()
+        self.explode_effect_sound.play()  # 播放爆炸效果音效
 
     def update(self, dt):
         self.scale_animation.update(dt)  # 更新爆炸效果的大小
@@ -186,6 +189,8 @@ class StarBullet(Bullet):
 
 
 class Laserbullet(EffectBullet):
+    laser_sound = None  # 雷射子彈的音效
+
     def __init__(self, pos, atk, size, angle=90):
         super().__init__(pos, atk, angle)
         self.hit_box = "polygon"  # 雷射子彈的碰撞盒為多邊形
@@ -216,6 +221,7 @@ class Laserbullet(EffectBullet):
         self.kill_animation1 = Animation(0.2, 1, 0, 0.1)  # 雷射子彈銷毀時的大小動畫
         self.kill_animation2 = Animation(0.2, size, 0)  # 雷射子彈銷毀時的大小動畫
         self.kill_time = 1  # 雷射子彈持續時間
+        self.laser_sound.play()  # 播放雷射子彈音效
 
     @property
     def polygon(self):  # 獲取雷射子彈的多邊形點
