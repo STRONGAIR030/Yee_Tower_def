@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from components.enemy import Enemy  # 避免循環引用，僅在類型檢查時導入
 
 
+# 子彈類別
 class Bullet(Item):
     def __init__(self, pos, atk, angle=180):
         self.hit_box = "circle"
@@ -22,7 +23,7 @@ class Bullet(Item):
         self.radius = 7  # 子彈半徑
         self.color = pygame.Color("#f6f600")  # 子彈顏色
 
-    def update(self, dt):
+    def update(self, dt):  # 更新子彈位置
         dx = math.cos(math.radians(self.dircetion_angle)) * self.speed * dt
         dy = -math.sin(math.radians(self.dircetion_angle)) * self.speed * dt
         self.pos[0] += dx
@@ -38,7 +39,7 @@ class Bullet(Item):
             self.kill()
 
 
-def draw(self, surface, zoom):
+def draw(self, surface, zoom):  # 繪製子彈
     screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
     pygame.draw.circle(
         surface,
@@ -48,15 +49,18 @@ def draw(self, surface, zoom):
     )
 
 
+# 繪製追蹤子彈
 class TrackBullet(Bullet):
     def __init__(self, pos, atk, target: "Enemy"):
         super().__init__(pos, atk)
         self.has_target = True  # 是否有目標
-        self.target = target
+        self.target = target  # 目標敵人
 
     def update(self, dt):
-        if self.target.display_health <= 0:
-            self.kill()
+        if self.target.display_health <= 0:  # 如果目標敵人已經死亡
+            self.kill()  # 銷毀子彈
+
+        # 計算子彈的移動向量
         dx = self.target.pos[0] - self.pos[0]
         dy = self.target.pos[1] - self.pos[1]
         dist = math.hypot(dx, dy)
@@ -66,6 +70,7 @@ class TrackBullet(Bullet):
             self.pos[0] += dx / dist * self.speed * dt
             self.pos[1] += dy / dist * self.speed * dt
 
+    # 繪製子彈
     def draw(self, surface, zoom):
         screen_x, screen_y = transform_coordinates(self.pos[0], self.pos[1])
         pygame.draw.circle(
@@ -76,6 +81,7 @@ class TrackBullet(Bullet):
         )
 
 
+# 繪製效果子彈
 class EffectBullet(Bullet):
     def __init__(self, pos, atk, angle=180):
         super().__init__(pos, atk, angle)
@@ -89,10 +95,10 @@ class EffectBullet(Bullet):
     def effect_color(self):
         return (self.color[0], self.color[1], self.color[2], self.alpha)
 
-    def is_hitted(self, enemy: "Enemy") -> bool:
+    def is_hitted(self, enemy: "Enemy") -> bool:  # 檢查子彈是否已經擊中過敵人
         return enemy in self.hit_enemy
 
-    def add_hit_enemy(self, enemy: "Enemy"):
+    def add_hit_enemy(self, enemy: "Enemy"):  # 添加已經擊中的敵人
         if enemy not in self.hit_enemy:
             self.hit_enemy.add(enemy)
 
@@ -109,8 +115,8 @@ class ExplodeEffect(EffectBullet):
         self.hit_enemy = set()
 
     def update(self, dt):
-        self.scale_animation.update(dt)
-        self.alpha_animation.update(dt)
+        self.scale_animation.update(dt)  # 更新爆炸效果的大小
+        self.alpha_animation.update(dt)  # 更新爆炸效果的透明度
 
         # 更新爆炸效果的半徑和透明度
         self.radius = self.scale_animation.value
@@ -159,12 +165,15 @@ class StarBullet(Bullet):
         self.color = pygame.Color("#000000")
         self.rotate_deg = 0
 
+    # 更新子彈
     def update(self, dt):
+        # 計算選轉角度
         self.rotate_deg += 10
         if self.rotate_deg >= 360:
             self.rotate_deg = 0
-        super().update(dt)
+        super().update(dt)  # 更新子彈位置
 
+    # 繪製子彈
     def draw(self, surface, zoom):
         center_pox = transform_coordinates(self.pos[0], self.pos[1])
 
@@ -180,12 +189,12 @@ class Laserbullet(EffectBullet):
     def __init__(self, pos, atk, size, angle=90):
         super().__init__(pos, atk, angle)
         self.hit_box = "polygon"  # 雷射子彈的碰撞盒為多邊形
-        self.is_effect = True
+        self.is_effect = True  # 是否是效果子彈
         self.hit_enemy = set()  # 記錄已經擊中的敵人
         self.radius = 1  # 雷射子彈的半徑
         self.size = (0.1, 0.1)
         self.original_size = size  # 原始大小
-        self.alpha = 0
+        self.alpha = 0  # 初始透明度
         self.rect_point = (
             (0, 0.5),
             (1, 0.5),
@@ -201,15 +210,15 @@ class Laserbullet(EffectBullet):
             ],
             -1,
         )
-        self.alpha_animation = Animation(0.3, 0, 255)
-        self.kill_alpha_animation = Animation(0.2, 255, 0)
-        self.scale_animation2 = Animation(0.2, 0, size)
-        self.kill_animation1 = Animation(0.2, 1, 0, 0.1)
-        self.kill_animation2 = Animation(0.2, size, 0)
-        self.kill_time = 1
+        self.alpha_animation = Animation(0.3, 0, 255)  # 雷射子彈透明度動畫
+        self.kill_alpha_animation = Animation(0.2, 255, 0)  # 雷射子彈銷毀時的透明度動畫
+        self.scale_animation2 = Animation(0.2, 0, size)  # 雷射子彈大小動畫
+        self.kill_animation1 = Animation(0.2, 1, 0, 0.1)  # 雷射子彈銷毀時的大小動畫
+        self.kill_animation2 = Animation(0.2, size, 0)  # 雷射子彈銷毀時的大小動畫
+        self.kill_time = 1  # 雷射子彈持續時間
 
     @property
-    def polygon(self):
+    def polygon(self):  # 獲取雷射子彈的多邊形點
         polygon_points = []
         for point in self.rect_point:
             rotated_point = rotate_point(
@@ -222,31 +231,33 @@ class Laserbullet(EffectBullet):
             polygon_points.append(rotated_point)
         return polygon_points
 
-    def update(self, dt):
-        self.scale_animation1.update(dt)
-        self.scale_animation2.update(dt)
-        self.alpha_animation.update(dt)
+    def update(self, dt):  # 更新雷射子彈狀態
+        self.scale_animation1.update(dt)  # 更新雷射子彈大小動畫
+        self.scale_animation2.update(dt)  # 更新雷射子彈大小動畫
+        self.alpha_animation.update(dt)  # 更新雷射子彈透明度動畫
 
         # 更新子彈的大小
         self.size = (
             self.scale_animation2.value * GRID_SIZE,
             self.scale_animation1.value * GRID_SIZE,
         )
-        self.alpha = int(self.alpha_animation.value)
-        self.kill_time -= dt
-        if self.kill_time <= 0:
-            self.kill_animation1.update(dt)
-            self.kill_animation2.update(dt)
-            self.kill_alpha_animation.update(dt)
-            if self.kill_animation1.is_complete:
+        self.alpha = int(self.alpha_animation.value)  # 更新雷射子彈透明度
+        self.kill_time -= dt  # 減少雷射子彈的持續時間
+        if self.kill_time <= 0:  # 如果雷射子彈持續時間結束
+            self.kill_animation1.update(dt)  # 更新銷毀動畫
+            self.kill_animation2.update(dt)  # 更新銷毀動畫
+            self.kill_alpha_animation.update(dt)  # 更新銷毀透明度動畫
+            if self.kill_animation1.is_complete:  # 如果銷毀動畫完成
                 self.kill()
             else:
+                # 更新雷射子彈的大小和透明度
                 self.size = (
                     self.original_size * GRID_SIZE,
                     self.kill_animation1.value * GRID_SIZE,
                 )
                 self.alpha = int(self.kill_alpha_animation.value)
 
+    # 繪製雷射子彈
     def draw(self, surface, zoom):
         rect_points = []
         for point in self.polygon:

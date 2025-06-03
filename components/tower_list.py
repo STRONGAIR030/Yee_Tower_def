@@ -7,6 +7,7 @@ from game_stat import GameState
 from tool.tool_function import get_price
 
 
+# TowerListItem 類別，用於顯示塔防列表中的每個塔防項目
 class TowerListItem:
     def __init__(self, tower_id, pos, type, tower_type, color=None, image=None, zoom=1):
         self.tower_id = tower_id
@@ -95,6 +96,7 @@ class TowerListItem:
         )
 
 
+# OkButton 類別，用於顯示確認按鈕
 class OkButton:
     ok_button_image = None
 
@@ -116,6 +118,7 @@ class OkButton:
         surface.blit(self.image, self.pos)
 
 
+# 蓋塔列表UI類別，用於顯示所有可建造的塔防
 class TowerList:
     def __init__(self):
         zoom = 1
