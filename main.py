@@ -51,12 +51,12 @@ OkButton.ok_button_image = load_image("ok_button.png")
 # 遊戲物件群主
 tower_buy_list = TowerList()  # 塔防購買列表
 tower_select_list = [  # 塔防選擇列表
-    # Tower,
-    # TriangleTower,
-    # SquareTower,
-    # StarTower,
-    # PentagonTower,
-    # RatctangleTower,
+    Tower,
+    TriangleTower,
+    SquareTower,
+    StarTower,
+    PentagonTower,
+    RatctangleTower,
 ]
 enemy_group = ItemGroup()  # 敵人群組
 bullets = ItemGroup()  # 子彈群組

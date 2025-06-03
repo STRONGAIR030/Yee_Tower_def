@@ -1,5 +1,3 @@
-import pygame
-
 # 碰撞檢測工具函數
 
 

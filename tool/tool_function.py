@@ -1,5 +1,4 @@
 import math
-from turtle import circle
 import pygame
 import os
 from typing import Dict, TYPE_CHECKING
