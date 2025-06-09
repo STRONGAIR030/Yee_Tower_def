@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 from components.bullet import ExplodeEffect, Laserbullet, StarBullet
 from components.tower_list import OkButton, TowerList
 from constants import (
@@ -87,6 +88,59 @@ for x in range(10):
             tile_type = "normal"
         tile = Tile(x, y, type=tile_type)
         tile_list.append(tile)
+
+
+# 開始介面
+def draw_start_screen(screen):
+    screen.fill((30, 30, 30))
+    font = pygame.font.Font(None, 72)
+    text = font.render("Yee Tower Defense", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_WIDTH // 2 - 50))
+    screen.blit(text, text_rect)
+    font2 = pygame.font.Font(None, 36)
+    tip = font2.render(
+        "Press the left mouse button to start the game", True, (200, 200, 200)
+    )
+    tip_rect = tip.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_WIDTH // 2 + 40))
+    screen.blit(tip, tip_rect)
+    pygame.display.flip()
+
+
+# GameOver 介面
+def draw_game_over_screen(screen, survive_time):
+    screen.fill((0, 0, 0))
+    font = pygame.font.Font(None, 80)
+    text = font.render("Game Over", True, (255, 0, 0))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_WIDTH // 2 - 60))
+    screen.blit(text, text_rect)
+    font2 = pygame.font.Font(None, 36)
+    tip = font2.render("Press any key to exit", True, (255, 255, 255))
+    tip_rect = tip.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_WIDTH // 2 + 60))
+    screen.blit(tip, tip_rect)
+    # 顯示存活時間
+    font3 = pygame.font.Font(None, 40)
+    time_text = font3.render(
+        f"Survival time: {survive_time:.1f} S", True, (255, 255, 0)
+    )
+    time_rect = time_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_WIDTH // 2))
+    screen.blit(time_text, time_rect)
+    pygame.display.flip()
+
+
+# 開始介面
+GameState.show_start = True
+while GameState.show_start:
+    clock.tick(60)  # 限制幀率
+    draw_start_screen(screen)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            GameState.show_start = False
+
+# 記錄開始時間
+GameState.start_time = time.time()
 
 # 主遊戲循環
 while GameState.running:
@@ -227,11 +281,16 @@ while GameState.running:
     text_surface2 = font.render(
         f"health: {GameState.home_health}", True, (0, 0, 0)
     )  # 渲染家園生命值文字
+    serval_time_text = font.render(
+        f"Survival Time: {int(time.time() - GameState.start_time)} S", True, (0, 0, 0)
+    )  # 渲染存活時間文字
 
     text_rect1 = text_surface1.get_rect()  # 獲取文字矩形
     text_rect1.topleft = (20, 20)  # 設置文字位置
     text_rect2 = text_surface2.get_rect()  # 獲取文字矩形
     text_rect2.topright = (SCREEN_WIDTH - 20, 20)  # 設置文字位置
+    serval_time_rect = serval_time_text.get_rect()  # 獲取存活時間文字矩形
+    serval_time_rect.topright = (SCREEN_WIDTH - 20, 50)  # 設置存活時間文字位置
 
     # 繪製所有物件
     # 繪製格子
@@ -252,7 +311,22 @@ while GameState.running:
     screen.blit(overlay, (0, 0))  # 將覆蓋層繪製到屏幕上
     screen.blit(text_surface1, text_rect1)  # 繪製金錢文字
     screen.blit(text_surface2, text_rect2)  # 繪製家園生命值文字
+    screen.blit(serval_time_text, serval_time_rect)  # 繪製存活時間文字
     pygame.display.flip()  # 顯示整個畫面內容
 
+# 記錄結束時間
+GameState.end_time = time.time()
+survive_time = GameState.end_time - GameState.start_time
+
+pygame.time.wait(100)  # 避免直接跳出
+# Game Over 介面
+show_game_over = True
+while show_game_over:
+    draw_game_over_screen(screen, survive_time)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            show_game_over = False
+        elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+            show_game_over = False
+
 pygame.quit()  # 結束遊戲
-print("Game over")  # 打印遊戲結束信息

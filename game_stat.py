@@ -19,3 +19,6 @@ class GameState:
     is_on_tower_list = False  # 是否在塔防列表中
     is_on_ok_button = False  # 是否在確認按鈕上
     build_tower = 1  # 當前建造的塔防數量
+    show_start = True  # 是否顯示開始介面
+    start_time = 0  # 開始時間
+    end_time = 0  # 結束時間
